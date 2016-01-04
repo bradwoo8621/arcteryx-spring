@@ -31,7 +31,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.nest</groupId>
-			<artifactId>arcteryx</artifactId>
+			<artifactId>arcteryx-core</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
