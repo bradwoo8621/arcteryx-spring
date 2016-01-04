@@ -10,7 +10,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * A resource lifecycle listener
+ * A resource registration listener
  * 
  * @author brad.wu
  */
@@ -19,9 +19,9 @@ import java.lang.annotation.Target;
 @AResourceListener
 public @interface AResourceRegistrationListener {
 	/**
-	 * get component id
+	 * get container id
 	 * 
 	 * @return
 	 */
-	String componentId();
+	String containerId();
 }

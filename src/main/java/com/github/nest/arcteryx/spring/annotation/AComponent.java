@@ -30,5 +30,5 @@ public @interface AComponent {
 	 * 
 	 * @return
 	 */
-	String applicationId() default "";
+	String applicationId();
 }

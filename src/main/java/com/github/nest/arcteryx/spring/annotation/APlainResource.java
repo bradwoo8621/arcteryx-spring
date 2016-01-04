@@ -3,6 +3,7 @@
  */
 package com.github.nest.arcteryx.spring.annotation;
 
+import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -10,18 +11,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * A resource lifecycle listener
+ * A resource.<br/>
+ * Class or method which annotated by this should be treated as a resource.
  * 
  * @author brad.wu
  */
-@Target(TYPE)
+@Target({ TYPE, METHOD })
 @Retention(RUNTIME)
-@AResourceListener
-public @interface AComponentRegistrationListener {
+public @interface APlainResource {
 	/**
-	 * get application id
+	 * get resource id
 	 * 
 	 * @return
 	 */
-	String applicationId();
+	String reosurceId();
+
+	/**
+	 * get component id
+	 * 
+	 * @return
+	 */
+	String componentId();
 }

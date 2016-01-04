@@ -10,7 +10,7 @@
 	<packaging>jar</packaging>
 
 	<name>arcteryx-spring</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/bradwoo8621/arcteryx-spring</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,6 +23,16 @@
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>4.2.4.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.nest</groupId>
+			<artifactId>arcteryx</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -68,4 +78,15 @@
 			</plugin>
 		</plugins>
 	</build>
+	<issueManagement>
+		<url>https://github.com/bradwoo8621/arcteryx-spring/issues</url>
+	</issueManagement>
+	<scm>
+		<url>https://github.com/bradwoo8621/arcteryx-spring.git</url>
+		<developerConnection>bradwoo8621</developerConnection>
+	</scm>
+	<ciManagement>
+		<url>https://travis-ci.org/bradwoo8621/arcteryx-spring</url>
+		<system>travis</system>
+	</ciManagement>
 </project>
