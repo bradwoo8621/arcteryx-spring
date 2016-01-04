@@ -1,0 +1,15 @@
+language: java
+#jdk:
+#  - oraclejdk7
+
+before_script:
+  - pip install --user codecov
+
+after_success:
+  - codecov
+  - mvn clean cobertura:cobertura coveralls:report
+ 
+notifications:
+  slack:
+    rooms:
+      - nest-parrot:z3jqw9krJbPu0CcQBKS90AnZ#travis-ci
