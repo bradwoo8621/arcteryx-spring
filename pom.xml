@@ -39,7 +39,7 @@
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
-	<build>
+	<!-- <build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<plugins>
 			<plugin>
@@ -76,12 +76,11 @@
 				<configuration>
 					<format>xml</format>
 					<maxmem>256m</maxmem>
-					<!-- aggregated reports for multi-module projects -->
 					<aggregate>true</aggregate>
 				</configuration>
 			</plugin>
 		</plugins>
-	</build>
+	</build> -->
 	<issueManagement>
 		<url>https://github.com/bradwoo8621/arcteryx-spring/issues</url>
 	</issueManagement>
