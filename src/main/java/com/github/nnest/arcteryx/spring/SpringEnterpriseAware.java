@@ -51,10 +51,10 @@ public class SpringEnterpriseAware extends ApplicationObjectSupport {
 	 * @param enterprise
 	 */
 	protected void setupApplications(ApplicationContext applicationContext, IEnterprise enterprise) {
-		String[] names = BeanFactoryUtils.beanNamesIncludingAncestors(applicationContext);
-		for (String name : names) {
-			System.out.println(name);
-		}
+//		String[] names = BeanFactoryUtils.beanNamesIncludingAncestors(applicationContext);
+//		for (String name : names) {
+//			System.out.println(name);
+//		}
 		Map<String, IResource> resources = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
 				IResource.class);
 		for (IResource resource : resources.values()) {
