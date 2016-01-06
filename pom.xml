@@ -83,13 +83,11 @@
 	</build> -->
 	<issueManagement>
 		<url>https://github.com/bradwoo8621/arcteryx-spring/issues</url>
+		<system>github</system>
 	</issueManagement>
 	<scm>
 		<url>https://github.com/bradwoo8621/arcteryx-spring.git</url>
-		<developerConnection>bradwoo8621</developerConnection>
+		<developerConnection>scm:git:git@github.com:bradwoo8621/arcteryx-spring.git</developerConnection>
+		<connection>scm:git:git://github.com/bradwoo8621/arcteryx-spring.git</connection>
 	</scm>
-	<ciManagement>
-		<url>https://travis-ci.org/bradwoo8621/arcteryx-spring</url>
-		<system>travis</system>
-	</ciManagement>
 </project>
