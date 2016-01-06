@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.nest.arcteryx.spring.annotation;
+package com.github.nnest.arcteryx.spring.annotation;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -10,25 +10,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * A component.<br/>
- * Class which annotated by this should be treated as a component.
+ * An application.<br/>
+ * Class which annotated by this should be treated as an application.
  * 
  * @author brad.wu
  */
 @Target(TYPE)
 @Retention(RUNTIME)
-public @interface AComponent {
+public @interface AnApplication {
 	/**
 	 * get id
 	 * 
 	 * @return
 	 */
 	String id();
-
-	/**
-	 * get application id
-	 * 
-	 * @return
-	 */
-	String applicationId();
 }

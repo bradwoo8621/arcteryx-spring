@@ -1,9 +1,9 @@
 /**
  * 
  */
-package com.github.nest.arcteryx.spring.bootstrap;
+package com.github.nnest.arcteryx.spring;
 
-import com.github.nest.arcteryx.Component;
+import com.github.nnest.arcteryx.Component;
 
 /**
  * @author brad.wu

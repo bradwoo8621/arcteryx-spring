@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.nest.arcteryx.spring.annotation;
+package com.github.nnest.arcteryx.spring.annotation;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;

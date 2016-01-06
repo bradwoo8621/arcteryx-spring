@@ -6,14 +6,26 @@
 	xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
 	default-lazy-init="true">
-	<bean class="com.github.nest.arcteryx.Application">
+	<bean class="com.github.nnest.arcteryx.spring.SpringEnterpriseAware" />
+	<bean
+		id="App2"
+		class="com.github.nnest.arcteryx.Application">
 		<constructor-arg
 			type="java.lang.String"
-			value="TestApplication" />
+			value="App2" />
 	</bean>
-	<bean class="com.github.nest.arcteryx.Application">
+	<bean
+		class="com.github.nnest.arcteryx.Component"
+		p:container-ref="App2">
 		<constructor-arg
 			type="java.lang.String"
-			value="TestApplication" />
+			value="Comp21" />
+	</bean>
+	<bean
+		class="com.github.nnest.arcteryx.Component"
+		p:container-ref="App2">
+		<constructor-arg
+			type="java.lang.String"
+			value="Comp22" />
 	</bean>
 </beans>

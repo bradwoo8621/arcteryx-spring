@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.nest.arcteryx.spring.annotation;
+package com.github.nnest.arcteryx.spring.annotation;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -10,18 +10,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * An application.<br/>
- * Class which annotated by this should be treated as an application.
+ * A resource lifecycle listener
  * 
  * @author brad.wu
  */
 @Target(TYPE)
 @Retention(RUNTIME)
-public @interface AnApplication {
+@AResourceListener
+public @interface AResourceLifecycleListener {
 	/**
-	 * get id
+	 * get resource id
 	 * 
 	 * @return
 	 */
-	String id();
+	String resourceId();
 }
