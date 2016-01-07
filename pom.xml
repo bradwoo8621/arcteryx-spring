@@ -90,4 +90,5 @@
 		<developerConnection>scm:git:git@github.com:bradwoo8621/arcteryx-spring.git</developerConnection>
 		<connection>scm:git:git://github.com/bradwoo8621/arcteryx-spring.git</connection>
 	</scm>
+	<description>resource management auto aware by spring</description>
 </project>
