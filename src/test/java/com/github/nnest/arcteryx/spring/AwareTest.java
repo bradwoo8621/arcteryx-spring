@@ -1,12 +1,13 @@
 package com.github.nnest.arcteryx.spring;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
 
 import com.github.nnest.arcteryx.IApplication;
 import com.github.nnest.arcteryx.IComponent;
@@ -17,9 +18,13 @@ import com.github.nnest.arcteryx.IEnterprise;
  *
  */
 public class AwareTest {
-//	@Test
+	@Test
 	public void testOneXML() {
-		ApplicationContext context = new GenericXmlApplicationContext(getClass(), "BootstrapTestOneXML.xml");
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
+						"AwareTestOneXML.xml" },
+				getClass());
 		test(context);
 	}
 
@@ -51,19 +56,101 @@ public class AwareTest {
 		assertEquals("Res111", comp11.findResource("Res111").getId());
 	}
 
-//	@Test
+	@Test
 	public void testMultipleXML() {
-		ApplicationContext context = new GenericXmlApplicationContext(getClass(), "BootstrapTestMultiXML-1.xml",
-				"BootstrapTestMultiXML-2.xml");
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
+						"AwareTestMultiXML-1.xml", //
+						"AwareTestMultiXML-2.xml" },
+				getClass());
 		test(context);
 	}
 
 	@Test
-	public void testHierarchyXML() {
-		ApplicationContext context = new GenericXmlApplicationContext(getClass(),
-				"BootstrapTestHierarchyXML-parent.xml");
-		context = new ClassPathXmlApplicationContext(new String[] { "BootstrapTestHierarchyXML-child.xml" }, getClass(),
-				context);
+	public void testHierarchyXMLAwareInChild() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-enterprise-spring.xml", //
+						"AwareTestHierarchyXML-parent.xml" },
+				getClass());
+		context = new ClassPathXmlApplicationContext(new String[] { //
+				"/META-INF/nnest/default-aware-spring.xml", //
+				"AwareTestHierarchyXML-child.xml" }, getClass(), context);
 		test(context);
+	}
+
+	@Test
+	public void testHierarchyXMLAwareInBoth() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
+						"AwareTestHierarchyXML-parent.xml" },
+				getClass());
+		context = new ClassPathXmlApplicationContext(new String[] { //
+				"/META-INF/nnest/default-aware-spring.xml", //
+				"AwareTestHierarchyXML-child.xml" }, getClass(), context);
+		test(context);
+	}
+
+	@Test
+	public void testHierarchyXMLEnterpriseInChild() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "AwareTestHierarchyXML-parent.xml" }, getClass());
+		context = new ClassPathXmlApplicationContext(new String[] { //
+				"/META-INF/nnest/default-aware-spring.xml", //
+				"/META-INF/nnest/default-enterprise-spring.xml", //
+				"AwareTestHierarchyXML-child.xml" }, getClass(), context);
+		test(context);
+	}
+
+	@Test
+	public void testHierarchyXMLEnterpriseInBoth() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "AwareTestHierarchyXML-parent.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml" },
+				getClass());
+		context = new ClassPathXmlApplicationContext(new String[] { //
+				"/META-INF/nnest/default-aware-spring.xml", //
+				"/META-INF/nnest/default-enterprise-spring.xml", //
+				"AwareTestHierarchyXML-child.xml" }, getClass(), context);
+
+		test(context);
+	}
+
+	@SuppressWarnings("resource")
+	@Test(expected = BeanCreationException.class)
+	public void testMissContainer() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
+						"AwareTestMissContainer.xml" },
+				getClass());
+		context.getBean(SpringEnterpriseAware.class);
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	public void testApplicationExtend() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
+						"AwareTestApplicationExtend-parent.xml" },
+				getClass());
+		context = new ClassPathXmlApplicationContext(new String[] { //
+				"/META-INF/nnest/default-aware-spring.xml", //
+				"AwareTestApplicationExtend-child.xml" }, getClass(), context);
+		SpringEnterpriseAware aware = context.getBean(SpringEnterpriseAware.class);
+		IEnterprise enterprise = aware.getEnterprise();
+		assertEquals(1, enterprise.getApplications().size());
+		assertEquals("App1", enterprise.getApplication("App1").getId());
+
+		IApplication application = enterprise.getApplication("App1");
+		assertEquals(2, application.getResources().size());
+		assertEquals(1, application.getResources(IComponent.class).size());
+		assertEquals(1, application.getResources(IApplication.class).size());
+
+		IComponent highLevelComponent = application.getResources(IComponent.class).iterator().next();
+		IComponent lowLevelComponent = application.findResource("Comp11");
+		assertNotEquals(highLevelComponent, lowLevelComponent);
 	}
 }

@@ -10,7 +10,7 @@ import com.github.nnest.arcteryx.Component;
  *
  */
 public class CustomComponent extends Component {
-	public CustomComponent() {
-		super("CustomComp");
+	public CustomComponent(String id) {
+		super(id);
 	}
 }

@@ -6,36 +6,25 @@
 	xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
 	default-lazy-init="true">
-	
-	<bean class="com.github.nnest.arcteryx.Enterprise" />
-	
 	<bean
-		id="App1"
+		id="App2"
 		class="com.github.nnest.arcteryx.Application">
 		<constructor-arg
 			type="java.lang.String"
-			value="App1" />
-	</bean>
-	<bean
-		id="Comp11"
-		class="com.github.nnest.arcteryx.Component"
-		p:container-ref="App1">
-		<constructor-arg
-			type="java.lang.String"
-			value="Comp11" />
+			value="App2" />
 	</bean>
 	<bean
 		class="com.github.nnest.arcteryx.Component"
-		p:container-ref="App1">
+		p:container-ref="App2">
 		<constructor-arg
 			type="java.lang.String"
-			value="Comp12" />
+			value="Comp21" />
 	</bean>
 	<bean
-		class="com.github.nnest.arcteryx.spring.CustomResource"
-		p:container-ref="Comp11">
+		class="com.github.nnest.arcteryx.Component"
+		p:container-ref="App2">
 		<constructor-arg
 			type="java.lang.String"
-			value="Res111" />
+			value="Comp22" />
 	</bean>
 </beans>
