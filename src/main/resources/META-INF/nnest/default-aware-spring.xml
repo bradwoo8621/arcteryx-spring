@@ -7,5 +7,5 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
 	default-lazy-init="true">
 
-	<bean class="com.github.nnest.arcteryx.spring.SpringEnterpriseAware" />
+	<bean class="com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise" />
 </beans>

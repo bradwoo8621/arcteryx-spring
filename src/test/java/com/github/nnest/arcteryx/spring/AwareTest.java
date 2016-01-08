@@ -29,7 +29,8 @@ public class AwareTest {
 	}
 
 	private void test(ApplicationContext context) {
-		SpringEnterpriseAware aware = context.getBean(SpringEnterpriseAware.class);
+		AutoAwareSpringEnterprise aware = context.getBean(AutoAwareSpringEnterprise.class);
+		
 		IEnterprise enterprise = aware.getEnterprise();
 		IApplication app1 = enterprise.getApplication("App1");
 		IApplication app2 = enterprise.getApplication("App2");
@@ -125,7 +126,7 @@ public class AwareTest {
 						"/META-INF/nnest/default-enterprise-spring.xml", //
 						"AwareTestMissContainer.xml" },
 				getClass());
-		context.getBean(SpringEnterpriseAware.class);
+		context.getBean(AutoAwareSpringEnterprise.class);
 	}
 
 	@SuppressWarnings("resource")
@@ -139,7 +140,7 @@ public class AwareTest {
 		context = new ClassPathXmlApplicationContext(new String[] { //
 				"/META-INF/nnest/default-aware-spring.xml", //
 				"AwareTestApplicationExtend-child.xml" }, getClass(), context);
-		SpringEnterpriseAware aware = context.getBean(SpringEnterpriseAware.class);
+		AutoAwareSpringEnterprise aware = context.getBean(AutoAwareSpringEnterprise.class);
 		IEnterprise enterprise = aware.getEnterprise();
 		assertEquals(1, enterprise.getApplications().size());
 		assertEquals("App1", enterprise.getApplication("App1").getId());

@@ -3,33 +3,26 @@
  */
 package com.github.nnest.arcteryx.spring.annotation;
 
-import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * A resource.<br/>
- * Class or method which annotated by this should be treated as a resource.
+ * A resource
  * 
  * @author brad.wu
  */
-@Target({ TYPE, METHOD })
+@Target(TYPE)
 @Retention(RUNTIME)
-public @interface APlainResource {
+@Documented
+public @interface AResource {
 	/**
-	 * get resource id
+	 * resource id
 	 * 
 	 * @return
 	 */
-	String reosurceId();
-
-	/**
-	 * get component id
-	 * 
-	 * @return
-	 */
-	String componentId();
+	String id() default "";
 }

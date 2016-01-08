@@ -4,8 +4,11 @@
 package com.github.nnest.arcteryx.spring.annotation;
 
 import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -15,15 +18,17 @@ import java.lang.annotation.Target;
  * 
  * @author brad.wu
  */
-@Target(TYPE)
+@Target({ TYPE, ANNOTATION_TYPE, METHOD })
 @Retention(RUNTIME)
+@Documented
+@AResource
 public @interface AComponent {
 	/**
 	 * get id
 	 * 
 	 * @return
 	 */
-	String id();
+	String id() default "";
 
 	/**
 	 * get application id

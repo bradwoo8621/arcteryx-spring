@@ -21,13 +21,13 @@ import com.github.nnest.arcteryx.IResource;
  * Enterprise spring aware.</br>
  * Any type of {@linkplain ApplicationContext} is accepted.</br>
  * </br>
- * <b>SpringEnterpriseAware</b>: Only one {@linkplain SpringEnterpriseAware} is
+ * <b>SpringEnterpriseAware</b>: Only one {@linkplain AutoAwareSpringEnterprise} is
  * allowed in application context. In hierarchy application contexts, it must be
  * defined in lowest level at least. Aware in high level will be skipped by
  * spring if low level existed. Note keep id of
- * {@linkplain SpringEnterpriseAware} not defined, use spring default name
+ * {@linkplain AutoAwareSpringEnterprise} not defined, use spring default name
  * generator.</br>
- * Default {@linkplain SpringEnterpriseAware} XML in
+ * Default {@linkplain AutoAwareSpringEnterprise} XML in
  * <b>META-INF/nnest/default-aware-spring.xml</b></br>
  * </br>
  * <b>Enterprise</b>: Only one {@linkplain IEnterprise} is allowed in
@@ -43,7 +43,7 @@ import com.github.nnest.arcteryx.IResource;
  * automatically.</br>
  * In normal application context (with no spring hierarchy application context),
  * bean id is not necessary. but container of resource is required.
- * {@linkplain SpringEnterpriseAware} use container configuration to build the
+ * {@linkplain AutoAwareSpringEnterprise} use container configuration to build the
  * application/component[/component]/resource tree.</br>
  * In hierarchy application context:</br>
  * 1. Not lowest level, each resource must have its bean id explicit to prevent
@@ -58,10 +58,10 @@ import com.github.nnest.arcteryx.IResource;
  * level, define it use same resource id.</br>
  * </br>
  * <font color='red'>Recommended: Define a prefix or suffix for bean id of each
- * level. {@linkplain SpringEnterpriseAware} use resource id to build hierarchy
+ * level. {@linkplain AutoAwareSpringEnterprise} use resource id to build hierarchy
  * tree, not spring bean id, so always keep spring bean id unique.</font></br>
  * </br>
- * A incorrect example:. </br>
+ * An incorrect example:. </br>
  * parent: context-parent.xml</br>
  * 
  * <pre>
@@ -87,7 +87,7 @@ import com.github.nnest.arcteryx.IResource;
  * 
  * @author brad.wu
  */
-public class SpringEnterpriseAware extends ApplicationObjectSupport {
+public class AutoAwareSpringEnterprise extends ApplicationObjectSupport {
 	/**
 	 * get enterprise
 	 * 
