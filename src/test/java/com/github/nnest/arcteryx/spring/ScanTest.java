@@ -6,6 +6,7 @@ package com.github.nnest.arcteryx.spring;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -59,11 +60,12 @@ public class ScanTest {
 	}
 
 	@SuppressWarnings("resource")
+	@Test(expected = BeanDefinitionStoreException.class)
 	public void scanConflictLayerId() {
 		ApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
 						"/META-INF/nnest/default-enterprise-spring.xml", //
-						"scan/layer/conflict/ScanTestLayerConflict.xml" },
+						"scan/conflict/ScanTestIdConflict.xml" },
 				getClass());
 		context.getBean(AutoAwareSpringEnterprise.class);
 	}

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.nnest.arcteryx.spring.scan.layer.conflict;
+package com.github.nnest.arcteryx.spring.scan.conflict;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

@@ -13,7 +13,7 @@
 	default-lazy-init="true">
 
 	<context:component-scan
-		base-package="com.github.nnest.arcteryx.spring.scan.layer.conflict"
+		base-package="com.github.nnest.arcteryx.spring.scan.conflict"
 		name-generator="com.github.nnest.arcteryx.spring.LayerResourceBeanNameGenerator">
 		<context:include-filter
 			type="annotation"
