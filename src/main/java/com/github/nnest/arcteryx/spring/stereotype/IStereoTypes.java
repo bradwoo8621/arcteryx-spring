@@ -38,10 +38,10 @@ public interface IStereoTypes {
 	/**
 	 * id property name of layer annotation
 	 */
-	String LAYER_ANNOTATION_PROP_ID = "id";
+	String LAYER_ANNOTATION_PROP_ID = "layerId";
 
 	/**
 	 * parent id property name of layer annotation
 	 */
-	String LAYER_PARENT_ANNOTATION_PROP_ID = "parentId";
+	String LAYER_PARENT_ANNOTATION_PROP_ID = "parentLayerId";
 }

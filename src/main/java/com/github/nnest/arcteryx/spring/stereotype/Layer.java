@@ -23,12 +23,12 @@ public @interface Layer {
 	 * 
 	 * @return
 	 */
-	String id();
+	String layerId();
 
 	/**
 	 * get parent layer id
 	 * 
 	 * @return
 	 */
-	String parentId() default "";
+	String parentLayerId() default "";
 }

@@ -16,12 +16,252 @@ import org.springframework.util.ClassUtils;
 import com.github.nnest.arcteryx.spring.IllegalResourceDefinitionException;
 
 /**
- * stereo type detective
+ * stereo type detective.</br>
+ * Id here means bean id in spring context, not id of resource.
  * 
  * @author brad.wu
  */
 public final class StereoTypeDetective {
 	public final static String LAYER_NAME_SEPARATOR = "-";
+
+	private static interface ILayerIdGetter {
+		/**
+		 * get id by given parameters
+		 * 
+		 * @param meta
+		 * @param annotationClassName
+		 * @param currentId
+		 * @param beanClassName
+		 * @return
+		 */
+		String getId(AnnotationMetadata meta, String annotationClassName, String currentId, String beanClassName);
+	}
+
+	private static class LayerIdGetter implements ILayerIdGetter {
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.ILayerIdGetter#getId(org.springframework.core.type.AnnotationMetadata,
+		 *      java.lang.String, java.lang.String, java.lang.String)
+		 */
+		public String getId(AnnotationMetadata meta, String annotationClassName, String currentId,
+				String beanClassName) {
+			return StereoTypeDetective.getLayerId(meta, annotationClassName, currentId, beanClassName);
+		}
+	}
+
+	private static class ParentLayerIdGetter implements ILayerIdGetter {
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.ILayerIdGetter#getId(org.springframework.core.type.AnnotationMetadata,
+		 *      java.lang.String, java.lang.String, java.lang.String)
+		 */
+		public String getId(AnnotationMetadata meta, String annotationClassName, String currentId,
+				String beanClassName) {
+			return StereoTypeDetective.getParentLayerId(meta, annotationClassName, currentId, beanClassName);
+		}
+	}
+
+	private static interface IIdGetter {
+		/**
+		 * get id from given parameters
+		 * 
+		 * @param meta
+		 * @param annotationClassName
+		 * @return
+		 */
+		String getId(AnnotationMetadata meta, String annotationClassName);
+
+		/**
+		 * get default id
+		 * 
+		 * @param annotatedDefinition
+		 * @return
+		 */
+		String getDefaultId(AnnotatedBeanDefinition annotatedDefinition);
+
+		/**
+		 * is default id allowed or not
+		 * 
+		 * @return
+		 */
+		boolean isDefaultIdAllowed();
+	}
+
+	private static class ResourceIdGetter implements IIdGetter {
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getId(org.springframework.core.type.AnnotationMetadata,
+		 *      java.lang.String)
+		 */
+		public String getId(AnnotationMetadata meta, String annotationClassName) {
+			return StereoTypeDetective.getResourceId(meta, annotationClassName);
+		}
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getDefaultId(org.springframework.beans.factory.annotation.AnnotatedBeanDefinition)
+		 */
+		public String getDefaultId(AnnotatedBeanDefinition annotatedDefinition) {
+			return StereoTypeDetective.buildDefaultBeanName(annotatedDefinition);
+		}
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#isDefaultIdAllowed()
+		 */
+		public boolean isDefaultIdAllowed() {
+			return true;
+		}
+	}
+
+	private static class ResourceContainerIdGetter implements IIdGetter {
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getId(org.springframework.core.type.AnnotationMetadata,
+		 *      java.lang.String)
+		 */
+		public String getId(AnnotationMetadata meta, String annotationClassName) {
+			return StereoTypeDetective.getContainerId(meta, annotationClassName);
+		}
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getDefaultId(org.springframework.beans.factory.annotation.AnnotatedBeanDefinition)
+		 */
+		public String getDefaultId(AnnotatedBeanDefinition annotatedDefinition) {
+			throw new UnsupportedOperationException("Operation not supported yet");
+		}
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#isDefaultIdAllowed()
+		 */
+		public boolean isDefaultIdAllowed() {
+			return false;
+		}
+	}
+
+	private static interface IExceptionThrower {
+		IllegalResourceDefinitionException raiseConflictIdsException(String beanClassName, String... resourceIds);
+	}
+
+	private static class ResourceExceptionThrower implements IExceptionThrower {
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IExceptionThrower#raiseConflictIdsException(java.lang.String,
+		 *      java.lang.String[])
+		 */
+		public IllegalResourceDefinitionException raiseConflictIdsException(String beanClassName,
+				String... resourceIds) {
+			return new IllegalResourceDefinitionException(//
+					"Conflict resource ids [" + StringUtils.join(resourceIds, ",")
+							+ "] defined in annotation for resource class [" + beanClassName + "]");
+		}
+	}
+
+	private static class ContainerExceptionThrower implements IExceptionThrower {
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IExceptionThrower#raiseConflictIdsException(java.lang.String,
+		 *      java.lang.String[])
+		 */
+		public IllegalResourceDefinitionException raiseConflictIdsException(String beanClassName,
+				String... containerIds) {
+			return new IllegalResourceDefinitionException(//
+					"Conflict container ids [" + StringUtils.join(containerIds, ",")
+							+ "] defined in annotation for resource class [" + beanClassName + "]");
+		}
+	}
+
+	private static class BeanIdDeterminerHelper {
+		private ILayerIdGetter layerIdGetter = null;
+		private IIdGetter idGetter = null;
+		private IExceptionThrower exceptionThrower = null;
+
+		public BeanIdDeterminerHelper(ILayerIdGetter layerIdGetter, IIdGetter idGetter,
+				IExceptionThrower exceptionThrower) {
+			this.layerIdGetter = layerIdGetter;
+			this.idGetter = idGetter;
+			this.exceptionThrower = exceptionThrower;
+		}
+
+		/**
+		 * @return the layerIdGetter
+		 */
+		public ILayerIdGetter getLayerIdGetter() {
+			return layerIdGetter;
+		}
+
+		/**
+		 * @return the idGetter
+		 */
+		public IIdGetter getIdGetter() {
+			return idGetter;
+		}
+
+		/**
+		 * @return the exceptionThrower
+		 */
+		public IExceptionThrower getExceptionThrower() {
+			return exceptionThrower;
+		}
+	}
+
+	/**
+	 * determin resource bean id
+	 * 
+	 * @param annotatedDefinition
+	 * @param helper
+	 * @return
+	 */
+	protected static String determineResourceBeanId(AnnotatedBeanDefinition annotatedDefinition,
+			BeanIdDeterminerHelper helper) {
+		AnnotationMetadata meta = annotatedDefinition.getMetadata();
+		Set<String> types = meta.getAnnotationTypes();
+
+		String layerId = null;
+		String beanId = null;
+		for (String type : types) {
+			boolean isResourceStereoType = false;
+			for (String metaType : meta.getMetaAnnotationTypes(type)) {
+				layerId = helper.getLayerIdGetter().getId(meta, metaType, layerId,
+						annotatedDefinition.getBeanClassName());
+				isResourceStereoType = isResourceStereoType || isResourceStereoType(metaType);
+			}
+			if (isResourceStereoType) {
+				if (StringUtils.isEmpty(beanId)) {
+					// no container id detected
+					beanId = helper.getIdGetter().getId(meta, type);
+				} else {
+					// detect container id even it was already detected
+					String anotherBeanId = helper.getIdGetter().getId(meta, type);
+					if (!StringUtils.equals(anotherBeanId, beanId)) {
+						throw helper.getExceptionThrower().raiseConflictIdsException(
+								annotatedDefinition.getBeanClassName(), beanId, anotherBeanId);
+					}
+				}
+			}
+			// if layer annotation is defined in class, use its id as layer id
+			layerId = helper.getLayerIdGetter().getId(meta, type, layerId, annotatedDefinition.getBeanClassName());
+		}
+		if (StringUtils.isEmpty(beanId) && helper.getIdGetter().isDefaultIdAllowed()) {
+			beanId = helper.getIdGetter().getDefaultId(annotatedDefinition);
+		}
+
+		return buildResourceBeanId(layerId, beanId);
+	}
 
 	/**
 	 * determine container id of application
@@ -30,37 +270,10 @@ public final class StereoTypeDetective {
 	 * @return
 	 */
 	public static String determinApplicationContainerId(AnnotatedBeanDefinition annotatedDefinition) {
-		AnnotationMetadata meta = annotatedDefinition.getMetadata();
-		Set<String> types = meta.getAnnotationTypes();
-
-		String parentLayerId = null;
-		String containerId = null;
-		for (String type : types) {
-			boolean isResourceStereoType = false;
-			for (String metaType : meta.getMetaAnnotationTypes(type)) {
-				parentLayerId = getParentLayerId(meta, metaType, parentLayerId, annotatedDefinition.getBeanClassName());
-				isResourceStereoType = isResourceStereoType || isResourceStereoType(metaType);
-			}
-			if (isResourceStereoType) {
-				if (StringUtils.isEmpty(containerId)) {
-					// no container id detected
-					containerId = getContainerId(meta, type);
-				} else {
-					// detect container id even it was already detected
-					String containerIdFromAnnotation = getContainerId(meta, type);
-					if (!StringUtils.equals(containerIdFromAnnotation, containerId)) {
-						throw new IllegalResourceDefinitionException(//
-								"Conflict container ids [" + containerId + ", " + containerIdFromAnnotation
-										+ "] defined in annotation for resource class ["
-										+ annotatedDefinition.getBeanClassName() + "]");
-					}
-				}
-			}
-			// if layer annotation is defined in class, use its id as layer id
-			parentLayerId = getParentLayerId(meta, type, parentLayerId, annotatedDefinition.getBeanClassName());
-		}
-
-		return buildResourceBeanId(parentLayerId, containerId);
+		return determineResourceBeanId(annotatedDefinition, //
+				new BeanIdDeterminerHelper(new ParentLayerIdGetter(), //
+						new ResourceContainerIdGetter(), //
+						new ContainerExceptionThrower()));
 	}
 
 	/**
@@ -70,37 +283,10 @@ public final class StereoTypeDetective {
 	 * @return
 	 */
 	public static String determineContainerId(AnnotatedBeanDefinition annotatedDefinition) {
-		AnnotationMetadata meta = annotatedDefinition.getMetadata();
-		Set<String> types = meta.getAnnotationTypes();
-
-		String layerId = null;
-		String containerId = null;
-		for (String type : types) {
-			boolean isResourceStereoType = false;
-			for (String metaType : meta.getMetaAnnotationTypes(type)) {
-				layerId = getLayerId(meta, metaType, layerId, annotatedDefinition.getBeanClassName());
-				isResourceStereoType = isResourceStereoType || isResourceStereoType(metaType);
-			}
-			if (isResourceStereoType) {
-				if (StringUtils.isEmpty(containerId)) {
-					// no container id detected
-					containerId = getContainerId(meta, type);
-				} else {
-					// detect container id even it was already detected
-					String containerIdFromAnnotation = getContainerId(meta, type);
-					if (!StringUtils.equals(containerIdFromAnnotation, containerId)) {
-						throw new IllegalResourceDefinitionException(//
-								"Conflict container ids [" + containerId + ", " + containerIdFromAnnotation
-										+ "] defined in annotation for resource class ["
-										+ annotatedDefinition.getBeanClassName() + "]");
-					}
-				}
-			}
-			// if layer annotation is defined in class, use its id as layer id
-			layerId = getLayerId(meta, type, layerId, annotatedDefinition.getBeanClassName());
-		}
-
-		return buildResourceBeanId(layerId, containerId);
+		return determineResourceBeanId(annotatedDefinition, //
+				new BeanIdDeterminerHelper(new LayerIdGetter(), //
+						new ResourceContainerIdGetter(), //
+						new ContainerExceptionThrower()));
 	}
 
 	/**
@@ -109,55 +295,28 @@ public final class StereoTypeDetective {
 	 * @param annotatedDefinition
 	 * @return
 	 */
-	public static String determineBeanName(AnnotatedBeanDefinition annotatedDefinition) {
-		AnnotationMetadata meta = annotatedDefinition.getMetadata();
-		Set<String> types = meta.getAnnotationTypes();
-
-		String layerId = null;
-		String beanName = null;
-		for (String type : types) {
-			boolean isResourceStereoType = false;
-			for (String metaType : meta.getMetaAnnotationTypes(type)) {
-				layerId = getLayerId(meta, metaType, layerId, annotatedDefinition.getBeanClassName());
-				isResourceStereoType = isResourceStereoType || isResourceStereoType(metaType);
-			}
-			if (isResourceStereoType) {
-				if (StringUtils.isEmpty(beanName)) {
-					// no bean name detected
-					beanName = getResourceId(meta, type);
-				} else {
-					// detect bean name even it was already detected
-					String beanNameFromAnnotation = getResourceId(meta, type);
-					if (!StringUtils.equals(beanNameFromAnnotation, beanName)) {
-						throw new IllegalResourceDefinitionException(//
-								"Conflict ids [" + beanName + ", " + beanNameFromAnnotation
-										+ "] defined in annotation for resource class ["
-										+ annotatedDefinition.getBeanClassName() + "]");
-					}
-				}
-			}
-			// if layer annotation is defined in class, use its id as layer id
-			layerId = getLayerId(meta, type, layerId, annotatedDefinition.getBeanClassName());
-		}
-		if (StringUtils.isEmpty(beanName)) {
-			beanName = buildDefaultBeanName(annotatedDefinition);
-		}
-
-		return buildResourceBeanId(layerId, beanName);
+	public static String determineResourceId(AnnotatedBeanDefinition annotatedDefinition) {
+		return determineResourceBeanId(annotatedDefinition, //
+				new BeanIdDeterminerHelper(new LayerIdGetter(), //
+						new ResourceIdGetter(), //
+						new ResourceExceptionThrower()));
 	}
 
 	/**
 	 * build resource bean id by given layer id and bean name
 	 * 
 	 * @param layerId
-	 * @param beanName
+	 * @param beanId
 	 * @return
 	 */
-	public static String buildResourceBeanId(String layerId, String beanName) {
+	public static String buildResourceBeanId(String layerId, String beanId) {
 		if (StringUtils.isBlank(layerId)) {
-			return beanName;
+			return beanId;
+		} else if (StringUtils.isBlank(beanId)) {
+			// no bean id defined
+			return null;
 		} else {
-			return StringUtils.join(new String[] { layerId, beanName }, LAYER_NAME_SEPARATOR);
+			return StringUtils.join(new String[] { layerId, beanId }, LAYER_NAME_SEPARATOR);
 		}
 	}
 
@@ -316,10 +475,10 @@ public final class StereoTypeDetective {
 	 * get annotation attributes by given annotation type
 	 * 
 	 * @param meta
-	 * @param type
+	 * @param annotationClassName
 	 * @return
 	 */
-	protected static AnnotationAttributes getAnnotationAttributes(AnnotationMetadata meta, String type) {
-		return AnnotationAttributes.fromMap(meta.getAnnotationAttributes(type, false));
+	protected static AnnotationAttributes getAnnotationAttributes(AnnotationMetadata meta, String annotationClassName) {
+		return AnnotationAttributes.fromMap(meta.getAnnotationAttributes(annotationClassName, false));
 	}
 }

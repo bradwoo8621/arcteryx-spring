@@ -19,6 +19,6 @@ import com.github.nnest.arcteryx.spring.stereotype.Layer;
 @Target(TYPE)
 @Retention(RUNTIME)
 @Documented
-@Layer(id = "one", parentId = "top")
+@Layer(layerId = "one", parentLayerId = "top")
 public @interface LayerA {
 }

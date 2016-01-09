@@ -59,7 +59,6 @@ public class ScanTest {
 	}
 
 	@SuppressWarnings("resource")
-	@Test(expected = IllegalResourceDefinitionException.class)
 	public void scanConflictLayerId() {
 		ApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
