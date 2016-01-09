@@ -12,9 +12,11 @@
 		http://www.springframework.org/schema/context/spring-context-4.0.xsd"
 	default-lazy-init="true">
 
-	<context:component-scan base-package="com.github.nnest.arcteryx.spring.scan">
+	<context:component-scan
+		base-package="com.github.nnest.arcteryx.spring.scan"
+		name-generator="com.github.nnest.arcteryx.spring.LayerResourceBeanNameGenerator">
 		<context:include-filter
 			type="annotation"
-			expression="com.github.nnest.arcteryx.spring.annotation.AResource" />
+			expression="com.github.nnest.arcteryx.spring.stereotype.AResource" />
 	</context:component-scan>
 </beans>

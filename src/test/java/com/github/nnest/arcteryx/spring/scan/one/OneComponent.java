@@ -4,14 +4,15 @@
 package com.github.nnest.arcteryx.spring.scan.one;
 
 import com.github.nnest.arcteryx.Component;
-import com.github.nnest.arcteryx.spring.annotation.AComponent;
 
 /**
  * @author brad.wu
  */
-@AComponent(applicationId = "Shop")
+@OneCompAnn(id = OneComponent.ID, containerId = OneApplication.ID)
 public class OneComponent extends Component {
-	public OneComponent(String id) {
-		super("ToySaler");
+	public static final String ID = "ToySaler";
+
+	public OneComponent() {
+		super(ID);
 	}
 }

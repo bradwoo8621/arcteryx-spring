@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.nnest.arcteryx.spring.annotation;
+package com.github.nnest.arcteryx.spring.stereotype;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

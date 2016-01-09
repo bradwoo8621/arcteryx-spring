@@ -4,14 +4,15 @@
 package com.github.nnest.arcteryx.spring.scan.one;
 
 import com.github.nnest.arcteryx.Application;
-import com.github.nnest.arcteryx.spring.annotation.AnApplication;
 
 /**
  * @author brad.wu
  */
-@AnApplication
+@OneAppAnn(id = OneApplication.ID)
 public class OneApplication extends Application {
+	public static final String ID = "Shop";
+
 	public OneApplication() {
-		super("Shop");
+		super(ID);
 	}
 }

@@ -5,25 +5,33 @@ package com.github.nnest.arcteryx.spring;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ApplicationObjectSupport;
 
 import com.github.nnest.arcteryx.IApplication;
+import com.github.nnest.arcteryx.IComponent;
 import com.github.nnest.arcteryx.IContainer;
 import com.github.nnest.arcteryx.IEnterprise;
 import com.github.nnest.arcteryx.IResource;
+import com.github.nnest.arcteryx.ResourceUtils;
+import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective;
 
 /**
  * Enterprise spring aware.</br>
  * Any type of {@linkplain ApplicationContext} is accepted.</br>
  * </br>
- * <b>SpringEnterpriseAware</b>: Only one {@linkplain AutoAwareSpringEnterprise} is
- * allowed in application context. In hierarchy application contexts, it must be
- * defined in lowest level at least. Aware in high level will be skipped by
+ * <b>SpringEnterpriseAware</b>: Only one {@linkplain AutoAwareSpringEnterprise}
+ * is allowed in application context. In hierarchy application contexts, it must
+ * be defined in lowest level at least. Aware in high level will be skipped by
  * spring if low level existed. Note keep id of
  * {@linkplain AutoAwareSpringEnterprise} not defined, use spring default name
  * generator.</br>
@@ -43,8 +51,8 @@ import com.github.nnest.arcteryx.IResource;
  * automatically.</br>
  * In normal application context (with no spring hierarchy application context),
  * bean id is not necessary. but container of resource is required.
- * {@linkplain AutoAwareSpringEnterprise} use container configuration to build the
- * application/component[/component]/resource tree.</br>
+ * {@linkplain AutoAwareSpringEnterprise} use container configuration to build
+ * the application/component[/component]/resource tree.</br>
  * In hierarchy application context:</br>
  * 1. Not lowest level, each resource must have its bean id explicit to prevent
  * the duplicated auto generated bean id is same as other bean in lower
@@ -58,8 +66,9 @@ import com.github.nnest.arcteryx.IResource;
  * level, define it use same resource id.</br>
  * </br>
  * <font color='red'>Recommended: Define a prefix or suffix for bean id of each
- * level. {@linkplain AutoAwareSpringEnterprise} use resource id to build hierarchy
- * tree, not spring bean id, so always keep spring bean id unique.</font></br>
+ * level. {@linkplain AutoAwareSpringEnterprise} use resource id to build
+ * hierarchy tree, not spring bean id, so always keep spring bean id
+ * unique.</font></br>
  * </br>
  * An incorrect example:. </br>
  * parent: context-parent.xml</br>
@@ -87,7 +96,7 @@ import com.github.nnest.arcteryx.IResource;
  * 
  * @author brad.wu
  */
-public class AutoAwareSpringEnterprise extends ApplicationObjectSupport {
+public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implements InitializingBean {
 	/**
 	 * get enterprise
 	 * 
@@ -100,10 +109,9 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport {
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see org.springframework.context.support.ApplicationObjectSupport#initApplicationContext()
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
-	@Override
-	protected void initApplicationContext() throws BeansException {
+	public void afterPropertiesSet() throws Exception {
 		IEnterprise enterprise = this.getEnterprise();
 		this.setupApplications(this.getApplicationContext(), enterprise);
 		enterprise.startup();
@@ -118,19 +126,77 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport {
 	protected void setupApplications(ApplicationContext applicationContext, IEnterprise enterprise) {
 		Map<String, IResource> resources = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
 				IResource.class);
-		for (IResource resource : resources.values()) {
+		for (Map.Entry<String, IResource> entry : resources.entrySet()) {
+			String beanName = entry.getKey();
+			IResource resource = entry.getValue();
 			IContainer container = resource.getContainer();
 			if (container == null) {
-				if (resource instanceof IApplication) {
-					// only prepare the top level applications
-					enterprise.prepareApplication((IApplication) resource);
+				container = findContainer(applicationContext, beanName, resource);
+				if (container != null) {
+					ResourceUtils.registerResource(container, resource);
 				} else {
-					throw new IllegalResourceDefinitionException("Container not defined with resource "
-							+ resource.getClass() + "[" + resource.getId() + "]");
+					// still not found container
+					this.setupResourceTopLevel(enterprise, resource);
 				}
 			} else {
 				container.registerResource(resource);
 			}
+		}
+
+		// TODO process the beans which doesn't implement the interface
+	}
+
+	/**
+	 * find container in application context
+	 * 
+	 * @param applicationContext
+	 * @param beanName
+	 * @param resource
+	 * @return
+	 */
+	protected IContainer findContainer(ApplicationContext applicationContext, String beanName, IResource resource) {
+		// only when application context is ConfigurableApplicationContext,
+		// get bean definition to determine the container
+		if (applicationContext instanceof ConfigurableApplicationContext) {
+			// case to configurable application context and get bean factory
+			ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext) applicationContext;
+			ConfigurableListableBeanFactory beanFactory = configurableContext.getBeanFactory();
+
+			// find the bean definition by bean name
+			if (beanFactory.containsBeanDefinition(beanName)) {
+				BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+				if (beanDefinition instanceof AnnotatedBeanDefinition) {
+					AnnotatedBeanDefinition annotatedDefinition = (AnnotatedBeanDefinition) beanDefinition;
+					String containerBeanId = null;
+					if (resource instanceof IApplication) {
+						// for IApplication
+						containerBeanId = StereoTypeDetective.determinApplicationContainerId(annotatedDefinition);
+					} else {
+						// for other kind of resource
+						containerBeanId = StereoTypeDetective.determineContainerId(annotatedDefinition);
+					}
+					if (!StringUtils.isEmpty(containerBeanId)) {
+						return applicationContext.getBean(containerBeanId, IContainer.class);
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * setup resource in top level (no container found)
+	 * 
+	 * @param enterprise
+	 * @param resource
+	 */
+	protected void setupResourceTopLevel(IEnterprise enterprise, IResource resource) {
+		if (resource instanceof IApplication) {
+			// only prepare the top level applications
+			enterprise.prepareApplication((IApplication) resource);
+		} else {
+			throw new IllegalResourceDefinitionException(
+					"Container not defined with resource " + resource.getClass() + "[" + resource.getId() + "]");
 		}
 	}
 

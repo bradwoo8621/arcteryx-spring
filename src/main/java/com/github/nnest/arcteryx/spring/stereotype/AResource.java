@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.nnest.arcteryx.spring.annotation;
+package com.github.nnest.arcteryx.spring.stereotype;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -11,20 +11,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * An application.<br/>
- * Class which annotated by this should be treated as an application.
+ * A resource
  * 
  * @author brad.wu
  */
 @Target(TYPE)
 @Retention(RUNTIME)
 @Documented
-@AResource
-public @interface AnApplication {
-	/**
-	 * get id
-	 * 
-	 * @return
-	 */
-	String id() default "";
+public @interface AResource {
 }
