@@ -48,9 +48,7 @@ public final class StereoTypeDetective {
 				} else {
 					// detect container id even it was already detected
 					String containerIdFromAnnotation = getContainerId(meta, type);
-					if (StringUtils.equals(containerIdFromAnnotation, containerId)) {
-						// do nothing
-					} else {
+					if (!StringUtils.equals(containerIdFromAnnotation, containerId)) {
 						throw new IllegalResourceDefinitionException(//
 								"Conflict container ids [" + containerId + ", " + containerIdFromAnnotation
 										+ "] defined in annotation for resource class ["
@@ -90,9 +88,7 @@ public final class StereoTypeDetective {
 				} else {
 					// detect container id even it was already detected
 					String containerIdFromAnnotation = getContainerId(meta, type);
-					if (StringUtils.equals(containerIdFromAnnotation, containerId)) {
-						// do nothing
-					} else {
+					if (!StringUtils.equals(containerIdFromAnnotation, containerId)) {
 						throw new IllegalResourceDefinitionException(//
 								"Conflict container ids [" + containerId + ", " + containerIdFromAnnotation
 										+ "] defined in annotation for resource class ["
@@ -132,9 +128,7 @@ public final class StereoTypeDetective {
 				} else {
 					// detect bean name even it was already detected
 					String beanNameFromAnnotation = getResourceId(meta, type);
-					if (StringUtils.equals(beanNameFromAnnotation, beanName)) {
-						// do nothing
-					} else {
+					if (!StringUtils.equals(beanNameFromAnnotation, beanName)) {
 						throw new IllegalResourceDefinitionException(//
 								"Conflict ids [" + beanName + ", " + beanNameFromAnnotation
 										+ "] defined in annotation for resource class ["
@@ -247,16 +241,9 @@ public final class StereoTypeDetective {
 	protected static String getParentLayerId(AnnotationMetadata meta, String annotationClassName,
 			String currentParentLayerId, String beanClassName) {
 		if (isLayerAnnotationType(annotationClassName)) {
-			String parentLayerId = getStringAttributeValue(meta, annotationClassName, getLayerParentIdPropertyName());
-			if (!StringUtils.isEmpty(currentParentLayerId) && StringUtils.equals(currentParentLayerId, parentLayerId)) {
-				throw new IllegalResourceDefinitionException(//
-						"Conflict parent layer ids [" + currentParentLayerId + ", " + parentLayerId
-								+ "] defined in annotation for resource class[" + beanClassName + "]");
-			} else {
-				return parentLayerId;
-			}
+			return getStringAttributeValue(meta, annotationClassName, getLayerParentIdPropertyName());
 		} else {
-			return null;
+			return currentParentLayerId;
 		}
 	}
 
@@ -284,16 +271,9 @@ public final class StereoTypeDetective {
 	protected static String getLayerId(AnnotationMetadata meta, String annotationClassName, String currentLayerId,
 			String beanClassName) {
 		if (isLayerAnnotationType(annotationClassName)) {
-			String layerId = getStringAttributeValue(meta, annotationClassName, getLayerIdPropertyName());
-			if (!StringUtils.isEmpty(currentLayerId) && StringUtils.equals(currentLayerId, layerId)) {
-				throw new IllegalResourceDefinitionException(//
-						"Conflict layer ids [" + currentLayerId + ", " + layerId
-								+ "] defined in annotation for resource class[" + beanClassName + "]");
-			} else {
-				return layerId;
-			}
+			return getStringAttributeValue(meta, annotationClassName, getLayerIdPropertyName());
 		} else {
-			return null;
+			return currentLayerId;
 		}
 	}
 

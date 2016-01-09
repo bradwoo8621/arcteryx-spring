@@ -20,11 +20,11 @@ import com.github.nnest.arcteryx.IResource;
 public class ScanTest {
 	@SuppressWarnings("resource")
 	@Test
-	public void scan() {
+	public void scanOne() {
 		ApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
 						"/META-INF/nnest/default-enterprise-spring.xml", //
-						"ScanTestOne.xml" },
+						"scan/one/ScanTestOne.xml" },
 				getClass());
 		AutoAwareSpringEnterprise aware = context.getBean(AutoAwareSpringEnterprise.class);
 		IEnterprise enterprise = aware.getEnterprise();
@@ -33,11 +33,39 @@ public class ScanTest {
 
 		IApplication app = enterprise.getApplication("Shop");
 		assertNotNull(app);
-		
+
 		IComponent comp = enterprise.findResource("Shop/ToySaler");
 		assertNotNull(comp);
-		
+
 		IResource res = enterprise.findResource("Shop/ToySaler/TedBear");
 		assertNotNull(res);
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	public void scanSameLayerId() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
+						"scan/layer/same/ScanTestLayerSame.xml" },
+				getClass());
+		AutoAwareSpringEnterprise aware = context.getBean(AutoAwareSpringEnterprise.class);
+		IEnterprise enterprise = aware.getEnterprise();
+
+		assertNotNull(enterprise);
+
+		IApplication app = enterprise.getApplication("Shop");
+		assertNotNull(app);
+	}
+
+	@SuppressWarnings("resource")
+	@Test(expected = IllegalResourceDefinitionException.class)
+	public void scanConflictLayerId() {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
+						"scan/layer/conflict/ScanTestLayerConflict.xml" },
+				getClass());
+		context.getBean(AutoAwareSpringEnterprise.class);
 	}
 }
