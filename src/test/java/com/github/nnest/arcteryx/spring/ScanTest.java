@@ -12,6 +12,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.github.nnest.arcteryx.IApplication;
 import com.github.nnest.arcteryx.IComponent;
 import com.github.nnest.arcteryx.IEnterprise;
+import com.github.nnest.arcteryx.IResource;
 
 /**
  * @author brad.wu
@@ -35,5 +36,8 @@ public class ScanTest {
 		
 		IComponent comp = enterprise.findResource("Shop/ToySaler");
 		assertNotNull(comp);
+		
+		IResource res = enterprise.findResource("Shop/ToySaler/TedBear");
+		assertNotNull(res);
 	}
 }

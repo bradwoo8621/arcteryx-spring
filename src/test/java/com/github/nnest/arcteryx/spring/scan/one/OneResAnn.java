@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.nnest.arcteryx.spring.stereotype;
+package com.github.nnest.arcteryx.spring.scan.one;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -10,18 +10,27 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import com.github.nnest.arcteryx.spring.stereotype.AResource;
+
 /**
- * A resource registration listener
- * 
  * @author brad.wu
+ *
  */
 @Target(TYPE)
 @Retention(RUNTIME)
-@AResourceListener
 @Documented
-public @interface AResourceRegistrationListener {
+@AResource
+@OneLayer
+public @interface OneResAnn {
 	/**
-	 * get container id
+	 * component id, default zero length string
+	 * 
+	 * @return
+	 */
+	String id() default "";
+
+	/**
+	 * container id
 	 * 
 	 * @return
 	 */
