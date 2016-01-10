@@ -170,7 +170,7 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 					String containerBeanId = null;
 					if (resource instanceof IApplication) {
 						// for IApplication
-						containerBeanId = StereoTypeDetective.determineApplicationContainerId(annotatedDefinition);
+						containerBeanId = StereoTypeDetective.determineParentApplicationBeanId(annotatedDefinition);
 						// even parent application bean id was determined
 						// the application bean not contains in application
 						// context
@@ -183,7 +183,7 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 						}
 					} else {
 						// for other kind of resource
-						containerBeanId = StereoTypeDetective.determineContainerId(annotatedDefinition);
+						containerBeanId = StereoTypeDetective.determineContainerBeanId(annotatedDefinition);
 						if (!StringUtils.isEmpty(containerBeanId)) {
 							return applicationContext.getBean(containerBeanId, IContainer.class);
 						}

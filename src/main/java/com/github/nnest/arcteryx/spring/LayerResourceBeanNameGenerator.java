@@ -28,7 +28,7 @@ public class LayerResourceBeanNameGenerator extends AnnotationBeanNameGenerator 
 		String beanName = null;
 		if (definition instanceof AnnotatedBeanDefinition) {
 			AnnotatedBeanDefinition annotatedDefinition = (AnnotatedBeanDefinition) definition;
-			beanName = StereoTypeDetective.determineResourceId(annotatedDefinition);
+			beanName = StereoTypeDetective.determineResourceBeanId(annotatedDefinition);
 			if (StringUtils.isNotEmpty(beanName)) {
 				return beanName;
 			}

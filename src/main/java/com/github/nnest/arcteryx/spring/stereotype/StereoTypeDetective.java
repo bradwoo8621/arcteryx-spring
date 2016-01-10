@@ -210,18 +210,19 @@ public final class StereoTypeDetective {
 
 	private static class ParentApplicationBeanIdGenerator extends DefaultBeanIdGenerator {
 		/**
-		 * (non-Javadoc)
+		 * Parent application bean id is same as current application. So if no
+		 * parent layerId found, treat it as no parent application bean id
 		 * 
 		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.DefaultBeanIdGenerator#generate(java.lang.String,
 		 *      java.lang.String)
 		 */
 		@Override
-		public String generate(String layerId, String beanId) {
-			if (StringUtils.isEmpty(layerId)) {
+		public String generate(String parentLayouerId, String beanId) {
+			if (StringUtils.isEmpty(parentLayouerId)) {
 				// no parent layer found, no parent application
 				return null;
 			}
-			return super.generate(layerId, beanId);
+			return super.generate(parentLayouerId, beanId);
 		}
 	}
 
@@ -323,7 +324,7 @@ public final class StereoTypeDetective {
 	 * @param annotatedDefinition
 	 * @return
 	 */
-	public static String determineApplicationContainerId(AnnotatedBeanDefinition annotatedDefinition) {
+	public static String determineParentApplicationBeanId(AnnotatedBeanDefinition annotatedDefinition) {
 		return determineResourceBeanId(annotatedDefinition, //
 				new BeanIdDeterminerHelper(new ParentLayerIdGetter(), //
 						new ResourceIdGetter(), //
@@ -337,7 +338,7 @@ public final class StereoTypeDetective {
 	 * @param annotatedDefinition
 	 * @return
 	 */
-	public static String determineContainerId(AnnotatedBeanDefinition annotatedDefinition) {
+	public static String determineContainerBeanId(AnnotatedBeanDefinition annotatedDefinition) {
 		return determineResourceBeanId(annotatedDefinition, //
 				new BeanIdDeterminerHelper(new LayerIdGetter(), //
 						new ResourceContainerIdGetter(), //
@@ -350,7 +351,7 @@ public final class StereoTypeDetective {
 	 * @param annotatedDefinition
 	 * @return
 	 */
-	public static String determineResourceId(AnnotatedBeanDefinition annotatedDefinition) {
+	public static String determineResourceBeanId(AnnotatedBeanDefinition annotatedDefinition) {
 		return determineResourceBeanId(annotatedDefinition, //
 				new BeanIdDeterminerHelper(new LayerIdGetter(), //
 						new ResourceIdGetter(), //
