@@ -170,13 +170,23 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 					String containerBeanId = null;
 					if (resource instanceof IApplication) {
 						// for IApplication
-						containerBeanId = StereoTypeDetective.determinApplicationContainerId(annotatedDefinition);
+						containerBeanId = StereoTypeDetective.determineApplicationContainerId(annotatedDefinition);
+						// even parent application bean id was determined
+						// the application bean not contains in application
+						// context
+						// still treat it as correct case
+						// the application will be registered into enterprise as
+						// top level application
+						if (!StringUtils.isEmpty(containerBeanId)
+								&& configurableContext.containsBean(containerBeanId)) {
+							return applicationContext.getBean(containerBeanId, IContainer.class);
+						}
 					} else {
 						// for other kind of resource
 						containerBeanId = StereoTypeDetective.determineContainerId(annotatedDefinition);
-					}
-					if (!StringUtils.isEmpty(containerBeanId)) {
-						return applicationContext.getBean(containerBeanId, IContainer.class);
+						if (!StringUtils.isEmpty(containerBeanId)) {
+							return applicationContext.getBean(containerBeanId, IContainer.class);
+						}
 					}
 				}
 			}

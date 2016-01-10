@@ -185,16 +185,63 @@ public final class StereoTypeDetective {
 		}
 	}
 
+	private static interface IBeanIdGenerator {
+		/**
+		 * generate bean id by given layer id and bean id
+		 * 
+		 * @param layerId
+		 * @param beanId
+		 * @return
+		 */
+		String generate(String layerId, String beanId);
+	}
+
+	private static class DefaultBeanIdGenerator implements IBeanIdGenerator {
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IBeanIdGenerator#generate(java.lang.String,
+		 *      java.lang.String)
+		 */
+		public String generate(String layerId, String beanId) {
+			return StereoTypeDetective.buildResourceBeanId(layerId, beanId);
+		}
+	}
+
+	private static class ParentApplicationBeanIdGenerator extends DefaultBeanIdGenerator {
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.DefaultBeanIdGenerator#generate(java.lang.String,
+		 *      java.lang.String)
+		 */
+		@Override
+		public String generate(String layerId, String beanId) {
+			if (StringUtils.isEmpty(layerId)) {
+				// no parent layer found, no parent application
+				return null;
+			}
+			return super.generate(layerId, beanId);
+		}
+	}
+
 	private static class BeanIdDeterminerHelper {
 		private ILayerIdGetter layerIdGetter = null;
 		private IIdGetter idGetter = null;
 		private IExceptionThrower exceptionThrower = null;
+		private IBeanIdGenerator beanIdGenerator = null;
 
 		public BeanIdDeterminerHelper(ILayerIdGetter layerIdGetter, IIdGetter idGetter,
 				IExceptionThrower exceptionThrower) {
+			this(layerIdGetter, idGetter, new DefaultBeanIdGenerator(), exceptionThrower);
+		}
+
+		public BeanIdDeterminerHelper(ILayerIdGetter layerIdGetter, IIdGetter idGetter,
+				IBeanIdGenerator beanIdGenerator, IExceptionThrower exceptionThrower) {
 			this.layerIdGetter = layerIdGetter;
 			this.idGetter = idGetter;
 			this.exceptionThrower = exceptionThrower;
+			this.beanIdGenerator = beanIdGenerator;
 		}
 
 		/**
@@ -209,6 +256,13 @@ public final class StereoTypeDetective {
 		 */
 		public IIdGetter getIdGetter() {
 			return idGetter;
+		}
+
+		/**
+		 * @return the beanIdGenerator
+		 */
+		public IBeanIdGenerator getBeanIdGenerator() {
+			return beanIdGenerator;
 		}
 
 		/**
@@ -260,7 +314,7 @@ public final class StereoTypeDetective {
 			beanId = helper.getIdGetter().getDefaultId(annotatedDefinition);
 		}
 
-		return buildResourceBeanId(layerId, beanId);
+		return helper.getBeanIdGenerator().generate(layerId, beanId);
 	}
 
 	/**
@@ -269,10 +323,11 @@ public final class StereoTypeDetective {
 	 * @param annotatedDefinition
 	 * @return
 	 */
-	public static String determinApplicationContainerId(AnnotatedBeanDefinition annotatedDefinition) {
+	public static String determineApplicationContainerId(AnnotatedBeanDefinition annotatedDefinition) {
 		return determineResourceBeanId(annotatedDefinition, //
 				new BeanIdDeterminerHelper(new ParentLayerIdGetter(), //
-						new ResourceContainerIdGetter(), //
+						new ResourceIdGetter(), //
+						new ParentApplicationBeanIdGenerator(), //
 						new ContainerExceptionThrower()));
 	}
 
