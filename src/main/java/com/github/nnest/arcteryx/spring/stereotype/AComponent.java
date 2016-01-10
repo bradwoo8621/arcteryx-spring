@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * 
  * @author brad.wu
  */
-@Target({  ANNOTATION_TYPE })
+@Target(ANNOTATION_TYPE)
 @Retention(RUNTIME)
 @Documented
 @AResource
