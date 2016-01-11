@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
@@ -23,8 +22,20 @@ import com.github.nnest.arcteryx.spring.IllegalResourceDefinitionException;
  */
 public final class StereoTypeDetective {
 	public final static String LAYER_NAME_SEPARATOR = "-";
+	public final static IBeanIdGenerator DEFAULT_BEAN_ID_GENERATOR = new DefaultBeanIdGenerator();
+	public final static IBeanIdGenerator PARENT_APP_BEAN_ID_GENERATOR = new ParentApplicationBeanIdGenerator();
+	
+	public final static IExceptionThrower CONTAINER_EXCEPTION_THROWER = new ContainerExceptionThrower();
+	public final static IExceptionThrower RESOURCE_EXCEPTION_THROWER = new ResourceExceptionThrower();
+	
+	public final static IIdGetter RESOURCE_ID_GETTER = new ResourceIdGetter();
+	public final static IIdGetter CONTAINER_ID_GETTER = new ResourceContainerIdGetter();
+	
+	public final static ILayerIdGetter LAYER_ID_GETTER = new LayerIdGetter();
+	public final static ILayerIdGetter PARENT_LAYER_ID_GETTER = new ParentLayerIdGetter();
+	public final static ILayerIdGetter IGNORE_LAYER_ID_GETTER = new IgnoreLayerIdGetter();
 
-	private static interface ILayerIdGetter {
+	public static interface ILayerIdGetter {
 		/**
 		 * get id by given parameters
 		 * 
@@ -37,7 +48,20 @@ public final class StereoTypeDetective {
 		String getId(AnnotationMetadata meta, String annotationClassName, String currentId, String beanClassName);
 	}
 
-	private static class LayerIdGetter implements ILayerIdGetter {
+	public static class IgnoreLayerIdGetter implements ILayerIdGetter {
+		/**
+		 * always return null
+		 * 
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.ILayerIdGetter#getId(org.springframework.core.type.AnnotationMetadata,
+		 *      java.lang.String, java.lang.String, java.lang.String)
+		 */
+		public String getId(AnnotationMetadata meta, String annotationClassName, String currentId,
+				String beanClassName) {
+			return null;
+		}
+	}
+
+	public static class LayerIdGetter implements ILayerIdGetter {
 		/**
 		 * (non-Javadoc)
 		 * 
@@ -50,7 +74,7 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static class ParentLayerIdGetter implements ILayerIdGetter {
+	public static class ParentLayerIdGetter implements ILayerIdGetter {
 
 		/**
 		 * (non-Javadoc)
@@ -64,7 +88,7 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static interface IIdGetter {
+	public static interface IIdGetter {
 		/**
 		 * get id from given parameters
 		 * 
@@ -77,10 +101,10 @@ public final class StereoTypeDetective {
 		/**
 		 * get default id
 		 * 
-		 * @param annotatedDefinition
+		 * @param beanClassName
 		 * @return
 		 */
-		String getDefaultId(AnnotatedBeanDefinition annotatedDefinition);
+		String getDefaultId(String beanClassName);
 
 		/**
 		 * is default id allowed or not
@@ -90,7 +114,7 @@ public final class StereoTypeDetective {
 		boolean isDefaultIdAllowed();
 	}
 
-	private static class ResourceIdGetter implements IIdGetter {
+	public static class ResourceIdGetter implements IIdGetter {
 		/**
 		 * (non-Javadoc)
 		 * 
@@ -104,10 +128,10 @@ public final class StereoTypeDetective {
 		/**
 		 * (non-Javadoc)
 		 * 
-		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getDefaultId(org.springframework.beans.factory.annotation.AnnotatedBeanDefinition)
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getDefaultId(java.lang.String)
 		 */
-		public String getDefaultId(AnnotatedBeanDefinition annotatedDefinition) {
-			return StereoTypeDetective.buildDefaultBeanName(annotatedDefinition);
+		public String getDefaultId(String beanClassName) {
+			return StereoTypeDetective.buildDefaultBeanName(beanClassName);
 		}
 
 		/**
@@ -120,7 +144,7 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static class ResourceContainerIdGetter implements IIdGetter {
+	public static class ResourceContainerIdGetter implements IIdGetter {
 		/**
 		 * (non-Javadoc)
 		 * 
@@ -134,9 +158,9 @@ public final class StereoTypeDetective {
 		/**
 		 * (non-Javadoc)
 		 * 
-		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getDefaultId(org.springframework.beans.factory.annotation.AnnotatedBeanDefinition)
+		 * @see com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.IIdGetter#getDefaultId(java.lang.String)
 		 */
-		public String getDefaultId(AnnotatedBeanDefinition annotatedDefinition) {
+		public String getDefaultId(String beanClassName) {
 			throw new UnsupportedOperationException("Operation not supported yet");
 		}
 
@@ -150,11 +174,11 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static interface IExceptionThrower {
+	public static interface IExceptionThrower {
 		IllegalResourceDefinitionException raiseConflictIdsException(String beanClassName, String... resourceIds);
 	}
 
-	private static class ResourceExceptionThrower implements IExceptionThrower {
+	public static class ResourceExceptionThrower implements IExceptionThrower {
 
 		/**
 		 * (non-Javadoc)
@@ -170,7 +194,7 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static class ContainerExceptionThrower implements IExceptionThrower {
+	public static class ContainerExceptionThrower implements IExceptionThrower {
 		/**
 		 * (non-Javadoc)
 		 * 
@@ -185,7 +209,7 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static interface IBeanIdGenerator {
+	public static interface IBeanIdGenerator {
 		/**
 		 * generate bean id by given layer id and bean id
 		 * 
@@ -196,7 +220,7 @@ public final class StereoTypeDetective {
 		String generate(String layerId, String beanId);
 	}
 
-	private static class DefaultBeanIdGenerator implements IBeanIdGenerator {
+	public static class DefaultBeanIdGenerator implements IBeanIdGenerator {
 		/**
 		 * (non-Javadoc)
 		 * 
@@ -208,7 +232,7 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static class ParentApplicationBeanIdGenerator extends DefaultBeanIdGenerator {
+	public static class ParentApplicationBeanIdGenerator extends DefaultBeanIdGenerator {
 		/**
 		 * Parent application bean id is same as current application. So if no
 		 * parent layerId found, treat it as no parent application bean id
@@ -226,7 +250,7 @@ public final class StereoTypeDetective {
 		}
 	}
 
-	private static class BeanIdDeterminerHelper {
+	public static class BeanIdDeterminerHelper {
 		private ILayerIdGetter layerIdGetter = null;
 		private IIdGetter idGetter = null;
 		private IExceptionThrower exceptionThrower = null;
@@ -234,7 +258,7 @@ public final class StereoTypeDetective {
 
 		public BeanIdDeterminerHelper(ILayerIdGetter layerIdGetter, IIdGetter idGetter,
 				IExceptionThrower exceptionThrower) {
-			this(layerIdGetter, idGetter, new DefaultBeanIdGenerator(), exceptionThrower);
+			this(layerIdGetter, idGetter, StereoTypeDetective.DEFAULT_BEAN_ID_GENERATOR, exceptionThrower);
 		}
 
 		public BeanIdDeterminerHelper(ILayerIdGetter layerIdGetter, IIdGetter idGetter,
@@ -275,15 +299,30 @@ public final class StereoTypeDetective {
 	}
 
 	/**
-	 * determin resource bean id
+	 * determine resource bean id
 	 * 
 	 * @param annotatedDefinition
 	 * @param helper
 	 * @return
 	 */
-	protected static String determineResourceBeanId(AnnotatedBeanDefinition annotatedDefinition,
+	public static String determineResourceBeanId(AnnotatedBeanDefinition annotatedDefinition,
 			BeanIdDeterminerHelper helper) {
+		String beanClassName = annotatedDefinition.getBeanClassName();
+
 		AnnotationMetadata meta = annotatedDefinition.getMetadata();
+		return determineResourceBeanId(beanClassName, meta, helper);
+	}
+
+	/**
+	 * determine resource bean id
+	 * 
+	 * @param beanClassName
+	 * @param meta
+	 * @param helper
+	 * @return
+	 */
+	public static String determineResourceBeanId(String beanClassName, AnnotationMetadata meta,
+			BeanIdDeterminerHelper helper) {
 		Set<String> types = meta.getAnnotationTypes();
 
 		String layerId = null;
@@ -291,8 +330,7 @@ public final class StereoTypeDetective {
 		for (String type : types) {
 			boolean isResourceStereoType = false;
 			for (String metaType : meta.getMetaAnnotationTypes(type)) {
-				layerId = helper.getLayerIdGetter().getId(meta, metaType, layerId,
-						annotatedDefinition.getBeanClassName());
+				layerId = helper.getLayerIdGetter().getId(meta, metaType, layerId, beanClassName);
 				isResourceStereoType = isResourceStereoType || isResourceStereoType(metaType);
 			}
 			if (isResourceStereoType) {
@@ -303,16 +341,16 @@ public final class StereoTypeDetective {
 					// detect container id even it was already detected
 					String anotherBeanId = helper.getIdGetter().getId(meta, type);
 					if (!StringUtils.equals(anotherBeanId, beanId)) {
-						throw helper.getExceptionThrower().raiseConflictIdsException(
-								annotatedDefinition.getBeanClassName(), beanId, anotherBeanId);
+						throw helper.getExceptionThrower().raiseConflictIdsException(beanClassName, beanId,
+								anotherBeanId);
 					}
 				}
 			}
 			// if layer annotation is defined in class, use its id as layer id
-			layerId = helper.getLayerIdGetter().getId(meta, type, layerId, annotatedDefinition.getBeanClassName());
+			layerId = helper.getLayerIdGetter().getId(meta, type, layerId, beanClassName);
 		}
 		if (StringUtils.isEmpty(beanId) && helper.getIdGetter().isDefaultIdAllowed()) {
-			beanId = helper.getIdGetter().getDefaultId(annotatedDefinition);
+			beanId = helper.getIdGetter().getDefaultId(beanClassName);
 		}
 
 		return helper.getBeanIdGenerator().generate(layerId, beanId);
@@ -326,10 +364,10 @@ public final class StereoTypeDetective {
 	 */
 	public static String determineParentApplicationBeanId(AnnotatedBeanDefinition annotatedDefinition) {
 		return determineResourceBeanId(annotatedDefinition, //
-				new BeanIdDeterminerHelper(new ParentLayerIdGetter(), //
-						new ResourceIdGetter(), //
-						new ParentApplicationBeanIdGenerator(), //
-						new ContainerExceptionThrower()));
+				new BeanIdDeterminerHelper(PARENT_LAYER_ID_GETTER, //
+						RESOURCE_ID_GETTER, //
+						PARENT_APP_BEAN_ID_GENERATOR, //
+						CONTAINER_EXCEPTION_THROWER));
 	}
 
 	/**
@@ -340,9 +378,9 @@ public final class StereoTypeDetective {
 	 */
 	public static String determineContainerBeanId(AnnotatedBeanDefinition annotatedDefinition) {
 		return determineResourceBeanId(annotatedDefinition, //
-				new BeanIdDeterminerHelper(new LayerIdGetter(), //
-						new ResourceContainerIdGetter(), //
-						new ContainerExceptionThrower()));
+				new BeanIdDeterminerHelper(LAYER_ID_GETTER, //
+						CONTAINER_ID_GETTER, //
+						CONTAINER_EXCEPTION_THROWER));
 	}
 
 	/**
@@ -353,9 +391,9 @@ public final class StereoTypeDetective {
 	 */
 	public static String determineResourceBeanId(AnnotatedBeanDefinition annotatedDefinition) {
 		return determineResourceBeanId(annotatedDefinition, //
-				new BeanIdDeterminerHelper(new LayerIdGetter(), //
-						new ResourceIdGetter(), //
-						new ResourceExceptionThrower()));
+				new BeanIdDeterminerHelper(LAYER_ID_GETTER, //
+						RESOURCE_ID_GETTER, //
+						RESOURCE_EXCEPTION_THROWER));
 	}
 
 	/**
@@ -379,11 +417,11 @@ public final class StereoTypeDetective {
 	/**
 	 * build default bean name
 	 * 
-	 * @param definition
+	 * @param beanClassName
 	 * @return
 	 */
-	protected static String buildDefaultBeanName(BeanDefinition definition) {
-		String shortClassName = ClassUtils.getShortName(definition.getBeanClassName());
+	public static String buildDefaultBeanName(String beanClassName) {
+		String shortClassName = ClassUtils.getShortName(beanClassName);
 		return Introspector.decapitalize(shortClassName);
 	}
 
@@ -394,7 +432,7 @@ public final class StereoTypeDetective {
 	 * @param annotationClassName
 	 * @return
 	 */
-	protected static String getResourceId(AnnotationMetadata meta, String annotationClassName) {
+	public static String getResourceId(AnnotationMetadata meta, String annotationClassName) {
 		return getStringAttributeValue(meta, annotationClassName, getResourceIdPropertyName());
 	}
 
@@ -403,7 +441,7 @@ public final class StereoTypeDetective {
 	 * 
 	 * @return
 	 */
-	protected static String getResourceIdPropertyName() {
+	public static String getResourceIdPropertyName() {
 		return IStereoTypes.RESOURCE_ANNOTATION_PROP_ID;
 	}
 
@@ -415,7 +453,7 @@ public final class StereoTypeDetective {
 	 * @param annotationClassName
 	 * @return
 	 */
-	protected static String getContainerId(AnnotationMetadata meta, String annotationClassName) {
+	public static String getContainerId(AnnotationMetadata meta, String annotationClassName) {
 		return getStringAttributeValue(meta, annotationClassName, getContainerIdPropertyName());
 	}
 
@@ -425,7 +463,7 @@ public final class StereoTypeDetective {
 	 * 
 	 * @return
 	 */
-	protected static String getContainerIdPropertyName() {
+	public static String getContainerIdPropertyName() {
 		return IStereoTypes.CONTAINER_ANNOTATION_PROP_ID;
 	}
 
@@ -435,7 +473,7 @@ public final class StereoTypeDetective {
 	 * @param annotationClassName
 	 * @return
 	 */
-	protected static boolean isResourceStereoType(String annotationClassName) {
+	public static boolean isResourceStereoType(String annotationClassName) {
 		return IStereoTypes.APPLICATION_ANNOTATION_TYPE.equals(annotationClassName)
 				|| IStereoTypes.COMPONENT_ANNOTATION_TYPE.equals(annotationClassName)
 				|| IStereoTypes.RESOURCE_ANNOTATION_TYPE.equals(annotationClassName);
@@ -453,7 +491,7 @@ public final class StereoTypeDetective {
 	 * @param beanClassName
 	 * @return
 	 */
-	protected static String getParentLayerId(AnnotationMetadata meta, String annotationClassName,
+	public static String getParentLayerId(AnnotationMetadata meta, String annotationClassName,
 			String currentParentLayerId, String beanClassName) {
 		if (isLayerAnnotationType(annotationClassName)) {
 			return getStringAttributeValue(meta, annotationClassName, getLayerParentIdPropertyName());
@@ -467,7 +505,7 @@ public final class StereoTypeDetective {
 	 * 
 	 * @return
 	 */
-	protected static String getLayerParentIdPropertyName() {
+	public static String getLayerParentIdPropertyName() {
 		return IStereoTypes.LAYER_PARENT_ANNOTATION_PROP_ID;
 	}
 
@@ -483,7 +521,7 @@ public final class StereoTypeDetective {
 	 * @param beanClassName
 	 * @return
 	 */
-	protected static String getLayerId(AnnotationMetadata meta, String annotationClassName, String currentLayerId,
+	public static String getLayerId(AnnotationMetadata meta, String annotationClassName, String currentLayerId,
 			String beanClassName) {
 		if (isLayerAnnotationType(annotationClassName)) {
 			return getStringAttributeValue(meta, annotationClassName, getLayerIdPropertyName());
@@ -500,7 +538,7 @@ public final class StereoTypeDetective {
 	 * @param propertyName
 	 * @return
 	 */
-	protected static String getStringAttributeValue(AnnotationMetadata meta, String annotationClassName,
+	public static String getStringAttributeValue(AnnotationMetadata meta, String annotationClassName,
 			String propertyName) {
 		AnnotationAttributes attributes = getAnnotationAttributes(meta, annotationClassName);
 		return (String) attributes.get(propertyName);
@@ -511,7 +549,7 @@ public final class StereoTypeDetective {
 	 * 
 	 * @return
 	 */
-	protected static String getLayerIdPropertyName() {
+	public static String getLayerIdPropertyName() {
 		return IStereoTypes.LAYER_ANNOTATION_PROP_ID;
 	}
 
@@ -523,7 +561,7 @@ public final class StereoTypeDetective {
 	 * @see com.github.nnest.arcteryx.spring.stereotype.Layer
 	 * @see IStereoTypes#LAYER_ANNOTATION_TYPE
 	 */
-	protected static boolean isLayerAnnotationType(String annotationClassName) {
+	public static boolean isLayerAnnotationType(String annotationClassName) {
 		return IStereoTypes.LAYER_ANNOTATION_TYPE.equals(annotationClassName);
 	}
 
@@ -534,7 +572,7 @@ public final class StereoTypeDetective {
 	 * @param annotationClassName
 	 * @return
 	 */
-	protected static AnnotationAttributes getAnnotationAttributes(AnnotationMetadata meta, String annotationClassName) {
+	public static AnnotationAttributes getAnnotationAttributes(AnnotationMetadata meta, String annotationClassName) {
 		return AnnotationAttributes.fromMap(meta.getAnnotationAttributes(annotationClassName, false));
 	}
 }
