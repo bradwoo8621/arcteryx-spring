@@ -22,7 +22,7 @@ import com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise;
 /**
  * @author brad.wu
  */
-public class ScanTestExtend {
+public class TestScanExtend {
 
 	@SuppressWarnings("resource")
 	@Test

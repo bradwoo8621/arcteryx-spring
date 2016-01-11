@@ -19,11 +19,12 @@ import com.github.nnest.arcteryx.IEnterprise;
 import com.github.nnest.arcteryx.IResource;
 import com.github.nnest.arcteryx.ResourceUtils;
 import com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise;
+import com.github.nnest.arcteryx.spring.IAnnotatedResource;
 
 /**
  * @author brad.wu
  */
-public class ScanTestAnnotated {
+public class TestScanAnnotated {
 
 	@SuppressWarnings("resource")
 	@Test
@@ -45,10 +46,14 @@ public class ScanTestAnnotated {
 		assertEquals(ResourceUtils.getLayer("top", null), app.getLayer());
 		Collection<IApplication> childApplications = app.getResources(IApplication.class);
 		assertEquals(1, childApplications.size());
-		assertEquals(ResourceUtils.getLayer("extend", "top"), childApplications.iterator().next().getLayer());
+		IAnnotatedResource extendApp = (IAnnotatedResource) childApplications.iterator().next();
+		assertEquals(ResourceUtils.getLayer("extend", "top"), extendApp.getLayer());
+		assertEquals("Shop", extendApp.getContainerId());
 		Collection<IComponent> components = app.getResources(IComponent.class);
 		assertEquals(1, components.size());
-		assertTrue(components.iterator().next() instanceof ToySaler);
+		IAnnotatedResource childComponent = (IAnnotatedResource) components.iterator().next();
+		assertTrue(childComponent instanceof ToySaler);
+		assertEquals("Shop", childComponent.getContainerId());
 
 		IComponent comp = enterprise.findResource("Shop/ToySaler");
 		assertNotNull(comp);

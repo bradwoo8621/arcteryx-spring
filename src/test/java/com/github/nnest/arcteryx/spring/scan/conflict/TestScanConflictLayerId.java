@@ -13,7 +13,7 @@ import com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise;
 /**
  * @author brad.wu
  */
-public class ScanTestConflictLayerId {
+public class TestScanConflictLayerId {
 	@SuppressWarnings("resource")
 	@Test(expected = BeanDefinitionStoreException.class)
 	public void scan() {
