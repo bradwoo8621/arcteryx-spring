@@ -5,6 +5,7 @@ package com.github.nnest.arcteryx.spring;
 
 import org.springframework.core.type.StandardAnnotationMetadata;
 
+import com.github.nnest.arcteryx.ILayer;
 import com.github.nnest.arcteryx.IResource;
 import com.github.nnest.arcteryx.ResourceUtils;
 import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective;
@@ -40,5 +41,16 @@ public class AnnotatedResourceUtils extends ResourceUtils {
 		return StereoTypeDetective.determineResourceBeanId(resourceClass.getName(), meta,
 				new BeanIdDeterminerHelper(StereoTypeDetective.IGNORE_LAYER_ID_GETTER,
 						StereoTypeDetective.CONTAINER_ID_GETTER, StereoTypeDetective.CONTAINER_EXCEPTION_THROWER));
+	}
+
+	/**
+	 * determine layer of resource
+	 * 
+	 * @param resourceClass
+	 * @return
+	 */
+	public static ILayer determineLayer(Class<? extends IResource> resourceClass) {
+		StandardAnnotationMetadata meta = new StandardAnnotationMetadata(resourceClass, true);
+		return StereoTypeDetective.determineLayer(resourceClass.getName(), meta);
 	}
 }

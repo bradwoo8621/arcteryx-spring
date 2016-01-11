@@ -12,6 +12,8 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
 
+import com.github.nnest.arcteryx.ILayer;
+import com.github.nnest.arcteryx.ResourceUtils;
 import com.github.nnest.arcteryx.spring.IllegalResourceDefinitionException;
 
 /**
@@ -24,13 +26,13 @@ public final class StereoTypeDetective {
 	public final static String LAYER_NAME_SEPARATOR = "-";
 	public final static IBeanIdGenerator DEFAULT_BEAN_ID_GENERATOR = new DefaultBeanIdGenerator();
 	public final static IBeanIdGenerator PARENT_APP_BEAN_ID_GENERATOR = new ParentApplicationBeanIdGenerator();
-	
+
 	public final static IExceptionThrower CONTAINER_EXCEPTION_THROWER = new ContainerExceptionThrower();
 	public final static IExceptionThrower RESOURCE_EXCEPTION_THROWER = new ResourceExceptionThrower();
-	
+
 	public final static IIdGetter RESOURCE_ID_GETTER = new ResourceIdGetter();
 	public final static IIdGetter CONTAINER_ID_GETTER = new ResourceContainerIdGetter();
-	
+
 	public final static ILayerIdGetter LAYER_ID_GETTER = new LayerIdGetter();
 	public final static ILayerIdGetter PARENT_LAYER_ID_GETTER = new ParentLayerIdGetter();
 	public final static ILayerIdGetter IGNORE_LAYER_ID_GETTER = new IgnoreLayerIdGetter();
@@ -354,6 +356,31 @@ public final class StereoTypeDetective {
 		}
 
 		return helper.getBeanIdGenerator().generate(layerId, beanId);
+	}
+
+	/**
+	 * determine layer of given bean class name
+	 * 
+	 * @param beanClassName
+	 * @param meta
+	 * @return
+	 */
+	public static ILayer determineLayer(String beanClassName, AnnotationMetadata meta) {
+		Set<String> types = meta.getAnnotationTypes();
+
+		String layerId = null;
+		String parentLayerId = null;
+		for (String type : types) {
+			for (String metaType : meta.getMetaAnnotationTypes(type)) {
+				layerId = LAYER_ID_GETTER.getId(meta, metaType, layerId, beanClassName);
+				parentLayerId = PARENT_LAYER_ID_GETTER.getId(meta, metaType, parentLayerId, beanClassName);
+			}
+			// if layer annotation is defined in class, use its id as layer id
+			layerId = LAYER_ID_GETTER.getId(meta, type, layerId, beanClassName);
+			parentLayerId = PARENT_LAYER_ID_GETTER.getId(meta, type, parentLayerId, beanClassName);
+		}
+
+		return ResourceUtils.getLayer(layerId, parentLayerId);
 	}
 
 	/**

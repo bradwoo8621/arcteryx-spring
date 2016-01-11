@@ -13,6 +13,7 @@ import com.github.nnest.arcteryx.Component;
 public class AnnotatedComponent extends Component implements IAnnotatedResource {
 	public AnnotatedComponent() {
 		super(null);
+		this.setLayer(AnnotatedResourceUtils.determineLayer(this.getClass()));
 	}
 
 	/**

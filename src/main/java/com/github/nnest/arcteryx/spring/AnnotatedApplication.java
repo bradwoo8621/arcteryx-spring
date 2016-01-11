@@ -13,6 +13,7 @@ import com.github.nnest.arcteryx.Application;
 public class AnnotatedApplication extends Application implements IAnnotatedResource {
 	public AnnotatedApplication() {
 		super(null);
+		this.setLayer(AnnotatedResourceUtils.determineLayer(this.getClass()));
 	}
 
 	/**

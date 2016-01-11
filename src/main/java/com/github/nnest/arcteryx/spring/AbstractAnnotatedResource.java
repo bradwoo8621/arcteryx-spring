@@ -13,6 +13,7 @@ import com.github.nnest.arcteryx.AbstractResource;
 public abstract class AbstractAnnotatedResource extends AbstractResource implements IAnnotatedResource {
 	public AbstractAnnotatedResource() {
 		super(null);
+		this.setLayer(AnnotatedResourceUtils.determineLayer(this.getClass()));
 	}
 
 	/**
