@@ -12,6 +12,19 @@
 		http://www.springframework.org/schema/context/spring-context-4.0.xsd"
 	default-lazy-init="true">
 
+	<bean
+		id="LayerExtendAnnotationResolver"
+		class="com.github.nnest.arcteryx.spring.ClassReferenceResourceDefinitionResolver" />
+		
+	<bean class="com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise">
+		<property name="resourceDefinitionResolvers">
+			<map>
+				<entry
+					key="com.github.nnest.arcteryx.spring.scan.annotated.ResInLayerExtend"
+					value-ref="LayerExtendAnnotationResolver" />
+			</map>
+		</property>
+	</bean>
 	<context:component-scan
 		base-package="com.github.nnest.arcteryx.spring.scan.annotated"
 		name-generator="com.github.nnest.arcteryx.spring.LayerResourceBeanNameGenerator">

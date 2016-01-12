@@ -6,7 +6,6 @@ package com.github.nnest.arcteryx.spring;
 import org.springframework.core.type.StandardAnnotationMetadata;
 
 import com.github.nnest.arcteryx.ILayer;
-import com.github.nnest.arcteryx.IResource;
 import com.github.nnest.arcteryx.ResourceUtils;
 import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective;
 import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective.BeanIdDeterminerHelper;
@@ -23,7 +22,7 @@ public class AnnotatedResourceUtils extends ResourceUtils {
 	 * @param resourceClass
 	 * @return
 	 */
-	public static String determineResourceId(Class<? extends IResource> resourceClass) {
+	public static String determineResourceId(Class<?> resourceClass) {
 		StandardAnnotationMetadata meta = new StandardAnnotationMetadata(resourceClass, true);
 		return StereoTypeDetective.determineResourceBeanId(resourceClass.getName(), meta,
 				new BeanIdDeterminerHelper(StereoTypeDetective.IGNORE_LAYER_ID_GETTER,
@@ -36,7 +35,7 @@ public class AnnotatedResourceUtils extends ResourceUtils {
 	 * @param class1
 	 * @return
 	 */
-	public static String determineContainerId(Class<? extends IResource> resourceClass) {
+	public static String determineContainerId(Class<?> resourceClass) {
 		StandardAnnotationMetadata meta = new StandardAnnotationMetadata(resourceClass, true);
 		return StereoTypeDetective.determineResourceBeanId(resourceClass.getName(), meta,
 				new BeanIdDeterminerHelper(StereoTypeDetective.IGNORE_LAYER_ID_GETTER,
@@ -49,7 +48,7 @@ public class AnnotatedResourceUtils extends ResourceUtils {
 	 * @param resourceClass
 	 * @return
 	 */
-	public static ILayer determineLayer(Class<? extends IResource> resourceClass) {
+	public static ILayer determineLayer(Class<?> resourceClass) {
 		StandardAnnotationMetadata meta = new StandardAnnotationMetadata(resourceClass, true);
 		return StereoTypeDetective.determineLayer(resourceClass.getName(), meta);
 	}

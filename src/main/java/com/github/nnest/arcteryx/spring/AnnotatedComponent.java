@@ -11,9 +11,12 @@ import com.github.nnest.arcteryx.Component;
  * @author brad.wu
  */
 public class AnnotatedComponent extends Component implements IAnnotatedResource {
+	private String containerBeanId = null;
+
 	public AnnotatedComponent() {
 		super(null);
 		this.setLayer(AnnotatedResourceUtils.determineLayer(this.getClass()));
+		this.containerBeanId = AnnotatedResourceUtils.determineContainerId(this.getClass());
 	}
 
 	/**
@@ -37,9 +40,10 @@ public class AnnotatedComponent extends Component implements IAnnotatedResource 
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResource#getContainerId()
+	 * 
+	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResource#getContainerBeanId()
 	 */
-	public String getContainerId() {
-		return AnnotatedResourceUtils.determineContainerId(this.getClass());
+	public String getContainerBeanId() {
+		return this.containerBeanId;
 	}
 }

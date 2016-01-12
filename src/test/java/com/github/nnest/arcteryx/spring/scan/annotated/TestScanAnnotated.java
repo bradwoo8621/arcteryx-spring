@@ -19,6 +19,7 @@ import com.github.nnest.arcteryx.IEnterprise;
 import com.github.nnest.arcteryx.IResource;
 import com.github.nnest.arcteryx.ResourceUtils;
 import com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise;
+import com.github.nnest.arcteryx.spring.ClassReferenceResource;
 import com.github.nnest.arcteryx.spring.IAnnotatedResource;
 
 /**
@@ -30,8 +31,7 @@ public class TestScanAnnotated {
 	@Test
 	public void scan() {
 		ApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
-						"/META-INF/nnest/default-enterprise-spring.xml", //
+				new String[] { "/META-INF/nnest/default-enterprise-spring.xml", //
 						"ScanTestAnnotated.xml" },
 				getClass());
 		AutoAwareSpringEnterprise aware = context.getBean(AutoAwareSpringEnterprise.class);
@@ -48,12 +48,12 @@ public class TestScanAnnotated {
 		assertEquals(1, childApplications.size());
 		IAnnotatedResource extendApp = (IAnnotatedResource) childApplications.iterator().next();
 		assertEquals(ResourceUtils.getLayer("extend", "top"), extendApp.getLayer());
-		assertEquals("Shop", extendApp.getContainerId());
+		assertEquals("Shop", extendApp.getContainerBeanId());
 		Collection<IComponent> components = app.getResources(IComponent.class);
 		assertEquals(1, components.size());
 		IAnnotatedResource childComponent = (IAnnotatedResource) components.iterator().next();
 		assertTrue(childComponent instanceof ToySaler);
-		assertEquals("Shop", childComponent.getContainerId());
+		assertEquals("Shop", childComponent.getContainerBeanId());
 
 		IComponent comp = enterprise.findResource("Shop/ToySaler");
 		assertNotNull(comp);
@@ -67,5 +67,12 @@ public class TestScanAnnotated {
 		res = enterprise.findResource("Shop/ToySaler/Lego");
 		assertNotNull(res);
 		assertTrue(res instanceof Lego);
+
+		res = enterprise.findResource("Shop/ToySaler/Transformer");
+		assertNotNull(res);
+		assertTrue(res instanceof ClassReferenceResource);
+		ClassReferenceResource crr = (ClassReferenceResource) res;
+		assertEquals(Transformer.class, crr.getReferenceClass());
+		assertEquals("extend-Transformer", crr.getReferenceBeanId());
 	}
 }

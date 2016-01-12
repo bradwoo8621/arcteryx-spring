@@ -11,9 +11,12 @@ import com.github.nnest.arcteryx.AbstractResource;
  * @author brad.wu
  */
 public abstract class AbstractAnnotatedResource extends AbstractResource implements IAnnotatedResource {
+	private String containerBeanId = null;
+
 	public AbstractAnnotatedResource() {
 		super(null);
 		this.setLayer(AnnotatedResourceUtils.determineLayer(this.getClass()));
+		this.containerBeanId = AnnotatedResourceUtils.determineContainerId(this.getClass());
 	}
 
 	/**
@@ -38,9 +41,9 @@ public abstract class AbstractAnnotatedResource extends AbstractResource impleme
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResource#getContainerId()
+	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResource#getContainerBeanId()
 	 */
-	public String getContainerId() {
-		return AnnotatedResourceUtils.determineContainerId(this.getClass());
+	public String getContainerBeanId() {
+		return this.containerBeanId;
 	}
 }

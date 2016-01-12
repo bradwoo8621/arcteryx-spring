@@ -38,9 +38,9 @@ public class AnnotatedApplication extends Application implements IAnnotatedResou
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResource#getContainerId()
+	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResource#getContainerBeanId()
 	 */
-	public String getContainerId() {
+	public String getContainerBeanId() {
 		return this.getId();
 	}
 }

@@ -16,5 +16,5 @@ public interface IAnnotatedResource extends IResource {
 	 * 
 	 * @return
 	 */
-	String getContainerId();
+	String getContainerBeanId();
 }
