@@ -19,8 +19,9 @@ import com.github.nnest.arcteryx.IEnterprise;
 import com.github.nnest.arcteryx.IResource;
 import com.github.nnest.arcteryx.ResourceUtils;
 import com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise;
-import com.github.nnest.arcteryx.spring.ClassReferenceResource;
 import com.github.nnest.arcteryx.spring.IAnnotatedResource;
+import com.github.nnest.arcteryx.spring.IClassReferenceResource;
+import com.github.nnest.arcteryx.spring.IMethodReferenceResource;
 
 /**
  * @author brad.wu
@@ -29,7 +30,7 @@ public class TestScanAnnotated {
 
 	@SuppressWarnings("resource")
 	@Test
-	public void scan() {
+	public void scan() throws NoSuchMethodException, SecurityException {
 		ApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "/META-INF/nnest/default-enterprise-spring.xml", //
 						"ScanTestAnnotated.xml" },
@@ -70,9 +71,27 @@ public class TestScanAnnotated {
 
 		res = enterprise.findResource("Shop/ToySaler/Transformer");
 		assertNotNull(res);
-		assertTrue(res instanceof ClassReferenceResource);
-		ClassReferenceResource crr = (ClassReferenceResource) res;
+		assertTrue(res instanceof IClassReferenceResource);
+		IClassReferenceResource crr = (IClassReferenceResource) res;
 		assertEquals(Transformer.class, crr.getReferenceClass());
 		assertEquals("extend-Transformer", crr.getReferenceBeanId());
+
+		res = enterprise.findResource("Shop/ToySaler/AccountService#collect");
+		assertNotNull(res);
+		assertTrue(res instanceof IMethodReferenceResource);
+		IMethodReferenceResource mrr = (IMethodReferenceResource) res;
+		assertEquals(AccountService.class, mrr.getReferenceClass());
+		assertEquals("extend-AccountService", mrr.getReferenceBeanId());
+		assertEquals("AccountService#collect", mrr.getId());
+		assertEquals(AccountService.class.getDeclaredMethod("collect", new Class<?>[0]), mrr.getReferenceMethod());
+
+		res = enterprise.findResource("Shop/ToySaler/AccountService#save");
+		assertNotNull(res);
+		assertTrue(res instanceof IMethodReferenceResource);
+		mrr = (IMethodReferenceResource) res;
+		assertEquals(AccountService.class, mrr.getReferenceClass());
+		assertEquals("extend-AccountService", mrr.getReferenceBeanId());
+		assertEquals("AccountService#save", mrr.getId());
+		assertEquals(AccountService.class.getDeclaredMethod("save", new Class<?>[0]), mrr.getReferenceMethod());
 	}
 }

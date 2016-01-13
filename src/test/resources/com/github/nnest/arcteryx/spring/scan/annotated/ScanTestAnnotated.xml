@@ -13,15 +13,21 @@
 	default-lazy-init="true">
 
 	<bean
-		id="LayerExtendAnnotationResolver"
+		id="ClassResolver"
 		class="com.github.nnest.arcteryx.spring.ClassReferenceResourceDefinitionResolver" />
-		
+	<bean
+		id="MethodResolver"
+		class="com.github.nnest.arcteryx.spring.MethodReferenceResourceDefinitionResolver" />
+
 	<bean class="com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise">
 		<property name="resourceDefinitionResolvers">
 			<map>
 				<entry
 					key="com.github.nnest.arcteryx.spring.scan.annotated.ResInLayerExtend"
-					value-ref="LayerExtendAnnotationResolver" />
+					value-ref="ClassResolver" />
+				<entry
+					key="com.github.nnest.arcteryx.spring.scan.annotated.ServiceInLayerExtend"
+					value-ref="MethodResolver" />
 			</map>
 		</property>
 	</bean>

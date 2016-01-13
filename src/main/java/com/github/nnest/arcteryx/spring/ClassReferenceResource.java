@@ -18,6 +18,13 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 	private Class<?> referenceClass = null;
 	private String containerBeanId;
 
+	/**
+	 * do nothing, only for class extend
+	 */
+	protected ClassReferenceResource() {
+		super(null);
+	}
+
 	public ClassReferenceResource(ApplicationContext applicationContext, String referenceBeanId,
 			Class<?> referenceClass) {
 		super(null);
@@ -25,7 +32,7 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 		this.setReferenceBeanId(referenceBeanId);
 		this.setReferenceClass(referenceClass);
 		this.setId(this.determineId());
-		this.containerBeanId = AnnotatedResourceUtils.determineContainerId(this.getReferenceClass());
+		this.setContainerBeanId(AnnotatedResourceUtils.determineContainerId(this.getReferenceClass()));
 		this.setLayer(AnnotatedResourceUtils.determineLayer(this.getReferenceClass()));
 	}
 
@@ -54,6 +61,14 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 	 */
 	public String getContainerBeanId() {
 		return this.containerBeanId;
+	}
+
+	
+	/**
+	 * @param containerBeanId the containerBeanId to set
+	 */
+	protected void setContainerBeanId(String containerBeanId) {
+		this.containerBeanId = containerBeanId;
 	}
 
 	/**

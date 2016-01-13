@@ -270,9 +270,15 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 					// already scanned by interface
 					continue;
 				}
-				IAnnotatedResource resource = this.createResource(configurableContext, beanDefinition, beanId,
+				IAnnotatedResource[] resources = this.createResource(configurableContext, beanDefinition, beanId,
 						annotationClass);
-				resourceMap.put(beanId, resource);
+				if (resources != null) {
+					for (IAnnotatedResource resource : resources) {
+						ILayer layer = resource.getLayer();
+						String id = resource.getId();
+						resourceMap.put(StereoTypeDetective.buildResourceBeanId(layer.getId(), id), resource);
+					}
+				}
 			}
 			return resourceMap;
 		} else {
@@ -303,7 +309,7 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 * @param annotationClass
 	 * @return
 	 */
-	protected IAnnotatedResource createResource(ConfigurableApplicationContext configurableContext,
+	protected IAnnotatedResource[] createResource(ConfigurableApplicationContext configurableContext,
 			BeanDefinition beanDefinition, String beanId, Class<? extends Annotation> annotationClass) {
 		IResourceDefinitionResolver resolver = this.getResourceDefinditionResolver(annotationClass);
 		return resolver.createResource(configurableContext, beanDefinition, beanId, annotationClass);

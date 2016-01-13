@@ -26,6 +26,6 @@ public interface IResourceDefinitionResolver {
 	 *            annotation class which auto scanner according to
 	 * @return
 	 */
-	IAnnotatedResource createResource(ApplicationContext applicationContext, BeanDefinition beanDefinition,
+	IAnnotatedResource[] createResource(ApplicationContext applicationContext, BeanDefinition beanDefinition,
 			String beanId, Class<? extends Annotation> annotationClass);
 }

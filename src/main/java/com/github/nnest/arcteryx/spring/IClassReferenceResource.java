@@ -31,5 +31,4 @@ public interface IClassReferenceResource extends IAnnotatedResource {
 	 * @return
 	 */
 	ApplicationContext getApplicationContext();
-
 }
