@@ -14,23 +14,21 @@
 
 	<bean
 		id="ClassResolver"
-		class="com.github.nnest.arcteryx.spring.ClassReferenceResourceDefinitionResolver" />
+		class="com.github.nnest.arcteryx.spring.ClassReferenceResourceDefinitionResolver"
+		p:annotationClass="com.github.nnest.arcteryx.spring.scan.annotated.ResInLayerExtend" />
 	<bean
 		id="MethodResolver"
-		class="com.github.nnest.arcteryx.spring.MethodReferenceResourceDefinitionResolver" />
+		class="com.github.nnest.arcteryx.spring.MethodReferenceResourceDefinitionResolver"
+		p:annotationClass="com.github.nnest.arcteryx.spring.scan.annotated.ServiceInLayerExtend" />
 
-	<bean class="com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise">
-		<property name="resourceDefinitionResolvers">
-			<map>
-				<entry
-					key="com.github.nnest.arcteryx.spring.scan.annotated.ResInLayerExtend"
-					value-ref="ClassResolver" />
-				<entry
-					key="com.github.nnest.arcteryx.spring.scan.annotated.ServiceInLayerExtend"
-					value-ref="MethodResolver" />
-			</map>
-		</property>
+	<bean
+		id="InterfaceScanner"
+		class="com.github.nnest.arcteryx.spring.ResourceInterfaceDefinitionScanner"
+		p:basePackages="com.github.nnest.arcteryx.spring.scan.annotated"
+		p:beanNameGenerator="com.github.nnest.arcteryx.spring.LayerResourceBeanNameGenerator"
+		p:includeAnnotations="com.github.nnest.arcteryx.spring.scan.annotated.ServiceInLayerExtend">
 	</bean>
+
 	<context:component-scan
 		base-package="com.github.nnest.arcteryx.spring.scan.annotated"
 		name-generator="com.github.nnest.arcteryx.spring.LayerResourceBeanNameGenerator">

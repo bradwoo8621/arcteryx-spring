@@ -13,11 +13,11 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author brad.wu
  */
-public class ClassReferenceResourceDefinitionResolver implements IResourceDefinitionResolver {
+public class ClassReferenceResourceDefinitionResolver extends AbstractAnnotatedResourceDefinitionResolver {
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see com.github.nnest.arcteryx.spring.IResourceDefinitionResolver#createResource(org.springframework.context.ApplicationContext,
+	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResourceDefinitionResolver#createResource(org.springframework.context.ApplicationContext,
 	 *      org.springframework.beans.factory.config.BeanDefinition,
 	 *      java.lang.String, java.lang.Class)
 	 */

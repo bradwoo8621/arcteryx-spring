@@ -6,6 +6,8 @@ package com.github.nnest.arcteryx.spring;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -101,36 +103,61 @@ import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective;
  * @author brad.wu
  */
 public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implements InitializingBean {
-	private Map<Class<? extends Annotation>, IResourceDefinitionResolver> resourceDefinitionResolvers = null;
+	private List<ResourceInterfaceDefinitionScanner> interfaceScanners = new LinkedList<ResourceInterfaceDefinitionScanner>();
+	private List<IAnnotatedResourceDefinitionResolver> resourceDefinitionResolvers = new LinkedList<IAnnotatedResourceDefinitionResolver>();
+
+	/**
+	 * @return the interfaceScanners
+	 */
+	public List<ResourceInterfaceDefinitionScanner> getInterfaceScanners() {
+		if (this.interfaceScanners == null) {
+			return Collections.emptyList();
+		} else {
+			return this.interfaceScanners;
+		}
+	}
+
+	/**
+	 * determine interface scanner
+	 * 
+	 * @param applicationContext
+	 */
+	protected void determineInterfaceScanner(ApplicationContext applicationContext) {
+		Map<String, ResourceInterfaceDefinitionScanner> scanners = BeanFactoryUtils
+				.beansOfTypeIncludingAncestors(applicationContext, ResourceInterfaceDefinitionScanner.class);
+		this.interfaceScanners.addAll(scanners.values());
+	}
 
 	/**
 	 * get regardful annotations
 	 * 
 	 * @return the regardfulAnnotations
 	 */
-	public Map<Class<? extends Annotation>, IResourceDefinitionResolver> getResourceDefinitionResolvers() {
-		return resourceDefinitionResolvers;
+	public List<IAnnotatedResourceDefinitionResolver> getResourceDefinitionResolvers() {
+		return this.resourceDefinitionResolvers;
 	}
 
 	/**
-	 * get resource definition resolver
+	 * add resource definition resolver
 	 * 
-	 * @param annotationClass
-	 * @return
+	 * @param resolver
 	 */
-	public IResourceDefinitionResolver getResourceDefinditionResolver(Class<? extends Annotation> annotationClass) {
-		return this.resourceDefinitionResolvers.get(annotationClass);
+	public void addResourceDefinitionResolver(IAnnotatedResourceDefinitionResolver resolver) {
+		if (!this.resourceDefinitionResolvers.contains(resolver)) {
+			this.resourceDefinitionResolvers.add(resolver);
+		}
 	}
 
 	/**
-	 * set regardful annotations
+	 * determine annotated resource definition resolvers from application
+	 * context
 	 * 
-	 * @param regardfulAnnotations
-	 *            the regardfulAnnotations to set
+	 * @param applicationContext
 	 */
-	public void setResourceDefinitionResolvers(
-			Map<Class<? extends Annotation>, IResourceDefinitionResolver> regardfulAnnotations) {
-		this.resourceDefinitionResolvers = regardfulAnnotations;
+	protected void determineAnnotatedResourceDefinitionResolvers(ApplicationContext applicationContext) {
+		Map<String, IAnnotatedResourceDefinitionResolver> resolvers = BeanFactoryUtils
+				.beansOfTypeIncludingAncestors(applicationContext, IAnnotatedResourceDefinitionResolver.class);
+		this.resourceDefinitionResolvers.addAll(resolvers.values());
 	}
 
 	/**
@@ -179,20 +206,44 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 			}
 		}
 
-		// process the beans which doesn't implement the interface
-		Map<Class<? extends Annotation>, IResourceDefinitionResolver> regardfulAnnotations = this
-				.getResourceDefinitionResolvers();
-		if (regardfulAnnotations != null && regardfulAnnotations.size() != 0) {
-			Map<String, IAnnotatedResource> resourceMap = new HashMap<String, IAnnotatedResource>();
-			for (Class<? extends Annotation> annotationClass : regardfulAnnotations.keySet()) {
-				resourceMap.putAll(this.scanBeansByAnnotation(applicationContext, annotationClass, enterprise));
+		List<ApplicationContext> allContexts = new LinkedList<ApplicationContext>();
+		allContexts.add(applicationContext);
+
+		this.determineInterfaceScanner(applicationContext);
+		List<ResourceInterfaceDefinitionScanner> scanners = this.getInterfaceScanners();
+		if (scanners != null && scanners.size() != 0) {
+			for (ResourceInterfaceDefinitionScanner scanner : scanners) {
+				int beanCount = scanner.scan();
+				if (beanCount != 0) {
+					allContexts.add(scanner.getApplicationContext());
+				}
 			}
-			for (Map.Entry<String, IAnnotatedResource> entry : resourceMap.entrySet()) {
-				IAnnotatedResource resource = entry.getValue();
-				this.findContainerAndRegister(applicationContext, enterprise, resourceMap, resource);
+		}
+
+		this.determineAnnotatedResourceDefinitionResolvers(applicationContext);
+		for (ApplicationContext context : allContexts) {
+			// process the beans which doesn't implement the interface
+			List<IAnnotatedResourceDefinitionResolver> resolvers = this.getResourceDefinitionResolvers();
+			if (resolvers != null && resolvers.size() != 0) {
+				Map<String, IAnnotatedResource> resourceMap = new HashMap<String, IAnnotatedResource>();
+				// loop resolver and its annotations
+				// scan application context to find resources
+				for (IAnnotatedResourceDefinitionResolver resolver : resolvers) {
+					for (Class<? extends Annotation> annotationClass : resolver.getAnnotationClasses()) {
+						resourceMap.putAll(this.scanBeansByAnnotation(context, annotationClass, enterprise, resolver));
+					}
+				}
+				// find container and register, build resource hierarchy
+				for (Map.Entry<String, IAnnotatedResource> entry : resourceMap.entrySet()) {
+					IAnnotatedResource resource = entry.getValue();
+					// always find in application context
+					// not other context from interface scanners since all
+					// resources not in application context are in resource map
+					this.findContainerAndRegister(applicationContext, resourceMap, enterprise, resource);
+				}
+			} else {
+				this.getLogger().info("No regardful annotations declared");
 			}
-		} else {
-			this.getLogger().info("No regardful annotations");
 		}
 	}
 
@@ -202,12 +253,12 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 * register into enterprise; otherwise register into its container
 	 * 
 	 * @param applicationContext
-	 * @param enterprise
 	 * @param resourceMap
+	 * @param enterprise
 	 * @param resource
 	 */
-	protected void findContainerAndRegister(ApplicationContext applicationContext, IEnterprise enterprise,
-			Map<String, IAnnotatedResource> resourceMap, IAnnotatedResource resource) {
+	protected void findContainerAndRegister(ApplicationContext applicationContext,
+			Map<String, IAnnotatedResource> resourceMap, IEnterprise enterprise, IAnnotatedResource resource) {
 		String containerId = resource.getContainerBeanId();
 		ILayer layer = resource.getLayer();
 		if (resource instanceof IApplication) {
@@ -241,6 +292,7 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 		if (applicationContext.containsBean(parentContainerBeanId)) {
 			ResourceUtils.registerResource((IContainer) applicationContext.getBean(parentContainerBeanId), resource);
 		} else {
+			// still not found, found in resource map
 			ResourceUtils.registerResource((IContainer) resourceMap.get(parentContainerBeanId), resource);
 		}
 	}
@@ -251,9 +303,11 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 * @param applicationContext
 	 * @param annotationClass
 	 * @param enterprise
+	 * @param annotatedDefinitionResolver
 	 */
 	protected Map<String, IAnnotatedResource> scanBeansByAnnotation(ApplicationContext applicationContext,
-			Class<? extends Annotation> annotationClass, IEnterprise enterprise) {
+			Class<? extends Annotation> annotationClass, IEnterprise enterprise,
+			IAnnotatedResourceDefinitionResolver annotatedDefinitionResolver) {
 		if (applicationContext instanceof ConfigurableApplicationContext) {
 			String[] beanIds = applicationContext.getBeanNamesForAnnotation(annotationClass);
 			if (beanIds == null || beanIds.length == 0) {
@@ -270,8 +324,8 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 					// already scanned by interface
 					continue;
 				}
-				IAnnotatedResource[] resources = this.createResource(configurableContext, beanDefinition, beanId,
-						annotationClass);
+				IAnnotatedResource[] resources = annotatedDefinitionResolver.createResource(configurableContext,
+						beanDefinition, beanId, annotationClass);
 				if (resources != null) {
 					for (IAnnotatedResource resource : resources) {
 						ILayer layer = resource.getLayer();
@@ -298,21 +352,6 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 		} catch (ClassNotFoundException e) {
 			throw new IllegalResourceDefinitionException(e);
 		}
-	}
-
-	/**
-	 * create resource by given application context and bean definition
-	 * 
-	 * @param configurableContext
-	 * @param beanDefinition
-	 * @param beanId
-	 * @param annotationClass
-	 * @return
-	 */
-	protected IAnnotatedResource[] createResource(ConfigurableApplicationContext configurableContext,
-			BeanDefinition beanDefinition, String beanId, Class<? extends Annotation> annotationClass) {
-		IResourceDefinitionResolver resolver = this.getResourceDefinditionResolver(annotationClass);
-		return resolver.createResource(configurableContext, beanDefinition, beanId, annotationClass);
 	}
 
 	/**

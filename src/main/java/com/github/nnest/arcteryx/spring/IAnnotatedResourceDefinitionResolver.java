@@ -4,6 +4,7 @@
 package com.github.nnest.arcteryx.spring;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
@@ -13,7 +14,14 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author brad.wu
  */
-public interface IResourceDefinitionResolver {
+public interface IAnnotatedResourceDefinitionResolver {
+	/**
+	 * get regardful annotation classes
+	 * 
+	 * @return
+	 */
+	List<Class<? extends Annotation>> getAnnotationClasses();
+
 	/**
 	 * create resource by given parameters
 	 * 

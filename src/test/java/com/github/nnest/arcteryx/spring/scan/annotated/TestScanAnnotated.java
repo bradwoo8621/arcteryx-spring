@@ -32,7 +32,8 @@ public class TestScanAnnotated {
 	@Test
 	public void scan() throws NoSuchMethodException, SecurityException {
 		ApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "/META-INF/nnest/default-enterprise-spring.xml", //
+				new String[] { "/META-INF/nnest/default-aware-spring.xml", //
+						"/META-INF/nnest/default-enterprise-spring.xml", //
 						"ScanTestAnnotated.xml" },
 				getClass());
 		AutoAwareSpringEnterprise aware = context.getBean(AutoAwareSpringEnterprise.class);
@@ -93,5 +94,14 @@ public class TestScanAnnotated {
 		assertEquals("extend-AccountService", mrr.getReferenceBeanId());
 		assertEquals("AccountService#save", mrr.getId());
 		assertEquals(AccountService.class.getDeclaredMethod("save", new Class<?>[0]), mrr.getReferenceMethod());
+
+		res = enterprise.findResource("Shop/ToySaler/GuideService#hello");
+		assertNotNull(res);
+		assertTrue(res instanceof IMethodReferenceResource);
+		mrr = (IMethodReferenceResource) res;
+		assertEquals(IGuideService.class, mrr.getReferenceClass());
+		assertEquals("extend-GuideService", mrr.getReferenceBeanId());
+		assertEquals("GuideService#hello", mrr.getId());
+		assertEquals(IGuideService.class.getDeclaredMethod("hello", new Class<?>[0]), mrr.getReferenceMethod());
 	}
 }
