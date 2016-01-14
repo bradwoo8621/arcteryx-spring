@@ -43,6 +43,7 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 	 */
 	@Override
 	protected void assertIdNotEmpty(String id) {
+		// overwrite super to accept empty string when constructing
 	}
 
 	/**
