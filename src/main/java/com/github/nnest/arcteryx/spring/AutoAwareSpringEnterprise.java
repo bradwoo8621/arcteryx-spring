@@ -3,7 +3,6 @@
  */
 package com.github.nnest.arcteryx.spring;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,21 +14,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ApplicationObjectSupport;
 
 import com.github.nnest.arcteryx.IApplication;
 import com.github.nnest.arcteryx.IComponent;
 import com.github.nnest.arcteryx.IContainer;
 import com.github.nnest.arcteryx.IEnterprise;
-import com.github.nnest.arcteryx.ILayer;
 import com.github.nnest.arcteryx.IResource;
+import com.github.nnest.arcteryx.ISystem;
 import com.github.nnest.arcteryx.ResourceUtils;
-import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective;
+import com.github.nnest.arcteryx.spring.stereotype.StereoTypeHelper;
 
 /**
  * Enterprise spring aware.</br>
@@ -53,23 +48,25 @@ import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective;
  * <b>META-INF/nnest/default-enterprise-spring.xml</b></br>
  * </br>
  * <b>Resourse</b>:</br>
- * {@linkplain IApplication} with no container will be added into enterprise
- * automatically.</br>
- * In normal application context (with no spring hierarchy application context),
- * bean id is not necessary. but container of resource is required.
+ * {@linkplain ISystem} will be added into enterprise automatically.</br>
+ * In normal spring application context (with no spring hierarchy application
+ * context), bean id is not necessary. but container of resource is required.
  * {@linkplain AutoAwareSpringEnterprise} use container configuration to build
- * the application/component[/component]/resource tree.</br>
+ * the system/application/component[/component]/resource tree.</br>
  * In hierarchy application context:</br>
- * 1. Not lowest level, each resource must have its bean id explicit to prevent
- * the duplicated auto generated bean id is same as other bean in lower
- * level.</br>
+ * 1. if not in lowest level, each resource must have its bean id explicit to
+ * prevent the duplicated auto generated bean id is same as other bean in lower
+ * level. Actually, always cannot ensure current is the lowest layer.</br>
  * 2. Lowest level, bean id is not necessary.</br>
- * For resource type: 1. {@linkplain IApplication} with container must have same
- * resource id with its contianer's.</br>
+ * For resource type: </br>
+ * 1. {@linkplain IApplication}, if want to replace the existed resource in high
+ * level, define it use same resource id.</br>
  * 2. {@linkplain IComponent}, if want to replace the existed component in
  * higher level, define it use same resource id.</br>
  * 3. {@linkplain IResource}, if want to replace the existed resource in high
  * level, define it use same resource id.</br>
+ * 4. {@linkplain ISystem}, define derivation if it is derived from another
+ * system.</br>
  * </br>
  * <font color='red'>Recommended: Define a prefix or suffix for bean id of each
  * level. {@linkplain AutoAwareSpringEnterprise} use resource id to build
@@ -104,7 +101,7 @@ import com.github.nnest.arcteryx.spring.stereotype.StereoTypeDetective;
  */
 public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implements InitializingBean {
 	private List<ResourceInterfaceDefinitionScanner> interfaceScanners = new LinkedList<ResourceInterfaceDefinitionScanner>();
-	private List<IAnnotatedResourceDefinitionResolver> resourceDefinitionResolvers = new LinkedList<IAnnotatedResourceDefinitionResolver>();
+	private List<IResourceDefinitionResolver> resourceDefinitionResolvers = new LinkedList<IResourceDefinitionResolver>();
 
 	/**
 	 * @return the interfaceScanners
@@ -133,7 +130,7 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 * 
 	 * @return the regardfulAnnotations
 	 */
-	public List<IAnnotatedResourceDefinitionResolver> getResourceDefinitionResolvers() {
+	public List<IResourceDefinitionResolver> getResourceDefinitionResolvers() {
 		return this.resourceDefinitionResolvers;
 	}
 
@@ -142,7 +139,7 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 * 
 	 * @param resolver
 	 */
-	public void addResourceDefinitionResolver(IAnnotatedResourceDefinitionResolver resolver) {
+	public void addResourceDefinitionResolver(IResourceDefinitionResolver resolver) {
 		if (!this.resourceDefinitionResolvers.contains(resolver)) {
 			this.resourceDefinitionResolvers.add(resolver);
 		}
@@ -155,8 +152,8 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 * @param applicationContext
 	 */
 	protected void determineAnnotatedResourceDefinitionResolvers(ApplicationContext applicationContext) {
-		Map<String, IAnnotatedResourceDefinitionResolver> resolvers = BeanFactoryUtils
-				.beansOfTypeIncludingAncestors(applicationContext, IAnnotatedResourceDefinitionResolver.class);
+		Map<String, IResourceDefinitionResolver> resolvers = BeanFactoryUtils
+				.beansOfTypeIncludingAncestors(applicationContext, IResourceDefinitionResolver.class);
 		this.resourceDefinitionResolvers.addAll(resolvers.values());
 	}
 
@@ -176,7 +173,7 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 */
 	public void afterPropertiesSet() throws Exception {
 		IEnterprise enterprise = this.getEnterprise();
-		this.setupApplications(this.getApplicationContext(), enterprise);
+		this.setupSystems(this.getApplicationContext(), enterprise);
 		enterprise.startup();
 	}
 
@@ -186,28 +183,17 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 	 * @param applicationContext
 	 * @param enterprise
 	 */
-	protected void setupApplications(ApplicationContext applicationContext, IEnterprise enterprise) {
-		Map<String, IResource> resources = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
-				IResource.class);
-		for (Map.Entry<String, IResource> entry : resources.entrySet()) {
-			String beanName = entry.getKey();
-			IResource resource = entry.getValue();
-			IContainer container = resource.getContainer();
-			if (container == null) {
-				container = findContainer(applicationContext, beanName, resource);
-				if (container != null) {
-					ResourceUtils.registerResource(container, resource);
-				} else {
-					// still not found container
-					this.setupResourceTopLevel(enterprise, resource);
-				}
-			} else {
-				container.registerResource(resource);
-			}
-		}
-
+	protected void setupSystems(ApplicationContext applicationContext, IEnterprise enterprise) {
 		List<ApplicationContext> allContexts = new LinkedList<ApplicationContext>();
 		allContexts.add(applicationContext);
+		Map<String, IResource> resourceMap = new HashMap<String, IResource>();
+
+		// if a class implements IResource, must was defined as a singleton bean
+		Map<String, IResource> resources = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
+				IResource.class);
+		for (IResource resource : resources.values()) {
+			resourceMap.put(StereoTypeHelper.determineResourcePath(resource.getClass()), resource);
+		}
 
 		this.determineInterfaceScanner(applicationContext);
 		List<ResourceInterfaceDefinitionScanner> scanners = this.getInterfaceScanners();
@@ -223,233 +209,35 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 		this.determineAnnotatedResourceDefinitionResolvers(applicationContext);
 		for (ApplicationContext context : allContexts) {
 			// process the beans which doesn't implement the interface
-			List<IAnnotatedResourceDefinitionResolver> resolvers = this.getResourceDefinitionResolvers();
+			List<IResourceDefinitionResolver> resolvers = this.getResourceDefinitionResolvers();
 			if (resolvers != null && resolvers.size() != 0) {
-				Map<String, IAnnotatedResource> resourceMap = new HashMap<String, IAnnotatedResource>();
 				// loop resolver and its annotations
 				// scan application context to find resources
-				for (IAnnotatedResourceDefinitionResolver resolver : resolvers) {
-					for (Class<? extends Annotation> annotationClass : resolver.getAnnotationClasses()) {
-						resourceMap.putAll(this.scanBeansByAnnotation(context, annotationClass, enterprise, resolver));
-					}
-				}
-				// find container and register, build resource hierarchy
-				for (Map.Entry<String, IAnnotatedResource> entry : resourceMap.entrySet()) {
-					IAnnotatedResource resource = entry.getValue();
-					// always find in application context
-					// not other context from interface scanners since all
-					// resources not in application context are in resource map
-					this.findContainerAndRegister(applicationContext, resourceMap, enterprise, resource);
+				for (IResourceDefinitionResolver resolver : resolvers) {
+					resourceMap.putAll(resolver.createResource(context));
 				}
 			} else {
 				this.getLogger().info("No regardful annotations declared");
 			}
 		}
-	}
 
-	/**
-	 * find container in applicationContext or resource map.</br>
-	 * if resource is an application and no parent application appointed,
-	 * register into enterprise; otherwise register into its container
-	 * 
-	 * @param applicationContext
-	 * @param resourceMap
-	 * @param enterprise
-	 * @param resource
-	 */
-	protected void findContainerAndRegister(ApplicationContext applicationContext,
-			Map<String, IAnnotatedResource> resourceMap, IEnterprise enterprise, IAnnotatedResource resource) {
-		String containerId = resource.getContainerBeanId();
-		ILayer layer = resource.getLayer();
-		if (resource instanceof IApplication) {
-			if (StringUtils.isEmpty(layer.getParentId())) {
-				// no parent layer found, register as top level
-				// application
-				this.setupResourceTopLevel(enterprise, resource);
+		// find container and register, build resource hierarchy
+		for (Map.Entry<String, IResource> entry : resourceMap.entrySet()) {
+			IResource resource = entry.getValue();
+			if (resource instanceof ISystem) {
+				enterprise.prepareSystem((ISystem) resource);
 			} else {
-				// find parent application
-				String parentApplicationBeanId = StereoTypeDetective.buildResourceBeanId(layer.getParentId(),
-						containerId);
-				this.findContainerAndRegister(applicationContext, resourceMap, resource, parentApplicationBeanId);
-			}
-		} else {
-			String parentContainerBeanId = StereoTypeDetective.buildResourceBeanId(layer.getId(), containerId);
-			this.findContainerAndRegister(applicationContext, resourceMap, resource, parentContainerBeanId);
-		}
-	}
-
-	/**
-	 * find container in application context or resource map. and register into
-	 * its container.
-	 * 
-	 * @param applicationContext
-	 * @param resourceMap
-	 * @param resource
-	 * @param parentContainerBeanId
-	 */
-	protected void findContainerAndRegister(ApplicationContext applicationContext,
-			Map<String, IAnnotatedResource> resourceMap, IAnnotatedResource resource, String parentContainerBeanId) {
-		if (applicationContext.containsBean(parentContainerBeanId)) {
-			ResourceUtils.registerResource((IContainer) applicationContext.getBean(parentContainerBeanId), resource);
-		} else {
-			// still not found, found in resource map
-			ResourceUtils.registerResource((IContainer) resourceMap.get(parentContainerBeanId), resource);
-		}
-	}
-
-	/**
-	 * scan beans by annotation
-	 * 
-	 * @param applicationContext
-	 * @param annotationClass
-	 * @param enterprise
-	 * @param annotatedDefinitionResolver
-	 */
-	protected Map<String, IAnnotatedResource> scanBeansByAnnotation(ApplicationContext applicationContext,
-			Class<? extends Annotation> annotationClass, IEnterprise enterprise,
-			IAnnotatedResourceDefinitionResolver annotatedDefinitionResolver) {
-		if (applicationContext instanceof ConfigurableApplicationContext) {
-			String[] beanIds = applicationContext.getBeanNamesForAnnotation(annotationClass);
-			if (beanIds == null || beanIds.length == 0) {
-				// do nothing
-				return Collections.emptyMap();
-			}
-
-			Map<String, IAnnotatedResource> resourceMap = new HashMap<String, IAnnotatedResource>();
-			ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext) applicationContext;
-			ConfigurableListableBeanFactory beanFactory = configurableContext.getBeanFactory();
-			for (String beanId : beanIds) {
-				BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanId);
-				if (isResourceInterfaceImplemented(beanDefinition)) {
-					// already scanned by interface
-					continue;
-				}
-				IAnnotatedResource[] resources = annotatedDefinitionResolver.createResource(configurableContext,
-						beanDefinition, beanId, annotationClass);
-				if (resources != null) {
-					for (IAnnotatedResource resource : resources) {
-						ILayer layer = resource.getLayer();
-						String id = resource.getId();
-						resourceMap.put(StereoTypeDetective.buildResourceBeanId(layer.getId(), id), resource);
-					}
-				}
-			}
-			return resourceMap;
-		} else {
-			return this.scanBeansByAnnotationInUnconfigurableContext(applicationContext, annotationClass, enterprise);
-		}
-	}
-
-	/**
-	 * is resource interface implemented
-	 * 
-	 * @param beanDefinition
-	 * @return
-	 */
-	protected boolean isResourceInterfaceImplemented(BeanDefinition beanDefinition) {
-		try {
-			return IResource.class.isAssignableFrom(Class.forName(beanDefinition.getBeanClassName()));
-		} catch (ClassNotFoundException e) {
-			throw new IllegalResourceDefinitionException(e);
-		}
-	}
-
-	/**
-	 * scan beans by annotation in unconfigurable context.</br>
-	 * default do nothing since {@linkplain ApplicationContext} always be an
-	 * instance of {@linkplain ConfigurableApplicationContext}.
-	 * 
-	 * @param applicationContext
-	 * @param annotationClass
-	 * @param enterprise
-	 */
-	protected Map<String, IAnnotatedResource> scanBeansByAnnotationInUnconfigurableContext(
-			ApplicationContext applicationContext, Class<? extends Annotation> annotationClass,
-			IEnterprise enterprise) {
-		this.getLogger().error("Ignore finding bean of annotation [{}] cause by application context is not a ",
-				annotationClass, ConfigurableApplicationContext.class);
-		return Collections.emptyMap();
-	}
-
-	/**
-	 * find container in application context
-	 * 
-	 * @param applicationContext
-	 * @param beanName
-	 * @param resource
-	 * @return
-	 */
-	protected IContainer findContainer(ApplicationContext applicationContext, String beanName, IResource resource) {
-		// only when application context is ConfigurableApplicationContext,
-		// get bean definition to determine the container
-		if (applicationContext instanceof ConfigurableApplicationContext) {
-			return this.findContainer((ConfigurableApplicationContext) applicationContext, beanName, resource);
-		} else {
-			this.getLogger().error("Skip find container of [{}] cause by application context is not a {}", beanName,
-					ConfigurableApplicationContext.class);
-		}
-		return null;
-	}
-
-	/**
-	 * find container in configurable application context
-	 * 
-	 * @param applicationContext
-	 * @param beanName
-	 * @param resource
-	 * @return
-	 */
-	protected IContainer findContainer(ConfigurableApplicationContext applicationContext, String beanName,
-			IResource resource) {
-		// case to configurable application context and get bean factory
-		ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext) applicationContext;
-		ConfigurableListableBeanFactory beanFactory = configurableContext.getBeanFactory();
-
-		// find the bean definition by bean name
-		if (beanFactory.containsBeanDefinition(beanName)) {
-			BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-			if (beanDefinition instanceof AnnotatedBeanDefinition) {
-				AnnotatedBeanDefinition annotatedDefinition = (AnnotatedBeanDefinition) beanDefinition;
-				String containerBeanId = null;
-				if (resource instanceof IApplication) {
-					// for IApplication
-					containerBeanId = StereoTypeDetective.determineParentApplicationBeanId(annotatedDefinition);
-					// even parent application bean id was determined
-					// the application bean not contains in application
-					// context
-					// still treat it as correct case
-					// the application will be registered into enterprise as
-					// top level application
-					if (!StringUtils.isEmpty(containerBeanId) && configurableContext.containsBean(containerBeanId)) {
-						return applicationContext.getBean(containerBeanId, IContainer.class);
-					}
+				String path = entry.getKey();
+				String containerPath = StringUtils.substring(path, 0, path.lastIndexOf(IResource.SEPARATOR_CHAR));
+				IResource container = resourceMap.get(containerPath);
+				if (container == null) {
+					throw new IllegalResourceDefinitionException("Container of resource [" + path + "] not found");
+				} else if (!(container instanceof IContainer)) {
+					throw new IllegalResourceDefinitionException("Resource [" + containerPath + "] is not a container");
 				} else {
-					// for other kind of resource
-					containerBeanId = StereoTypeDetective.determineContainerBeanId(annotatedDefinition);
-					if (!StringUtils.isEmpty(containerBeanId)) {
-						return applicationContext.getBean(containerBeanId, IContainer.class);
-					}
+					ResourceUtils.registerResource((IContainer) container, resource);
 				}
 			}
-		} else {
-			this.getLogger().error("Bean definition [{}] not found in application context", beanName);
-		}
-		return null;
-	}
-
-	/**
-	 * setup resource in top level (no container found)
-	 * 
-	 * @param enterprise
-	 * @param resource
-	 */
-	protected void setupResourceTopLevel(IEnterprise enterprise, IResource resource) {
-		if (resource instanceof IApplication) {
-			// only prepare the top level applications
-			enterprise.prepareApplication((IApplication) resource);
-		} else {
-			throw new IllegalResourceDefinitionException(
-					"Container not defined with resource " + resource.getClass() + "[" + resource.getId() + "]");
 		}
 	}
 

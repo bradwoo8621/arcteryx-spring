@@ -5,12 +5,14 @@ package com.github.nnest.arcteryx.spring;
 
 import org.springframework.context.ApplicationContext;
 
+import com.github.nnest.arcteryx.IResource;
+
 /**
  * Class reference resource
  * 
  * @author brad.wu
  */
-public interface IClassReferenceResource extends IAnnotatedResource {
+public interface IClassReferenceResource extends IResource {
 	/**
 	 * get reference class
 	 * 
@@ -31,4 +33,11 @@ public interface IClassReferenceResource extends IAnnotatedResource {
 	 * @return
 	 */
 	ApplicationContext getApplicationContext();
+
+	/**
+	 * set id
+	 * 
+	 * @param id
+	 */
+	void setId(String id);
 }

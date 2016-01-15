@@ -5,7 +5,7 @@ package com.github.nnest.arcteryx.spring.stereotype;
 
 /**
  * Stereo types. </br>
- * Define names of resource/layer annotation types
+ * Define names of resource annotation types
  * 
  * @author brad.wu
  */
@@ -23,25 +23,7 @@ public interface IStereoTypes {
 	 */
 	String APPLICATION_ANNOTATION_TYPE = AnApplication.class.getName();
 	/**
-	 * id property name of resource/component/application annotations
+	 * system annotation type
 	 */
-	String RESOURCE_ANNOTATION_PROP_ID = "id";
-	/**
-	 * container id property name of resource/component/application annotations
-	 */
-	String CONTAINER_ANNOTATION_PROP_ID = "containerId";
-
-	/**
-	 * layer annotation type
-	 */
-	String LAYER_ANNOTATION_TYPE = Layer.class.getName();
-	/**
-	 * id property name of layer annotation
-	 */
-	String LAYER_ANNOTATION_PROP_ID = "layerId";
-
-	/**
-	 * parent id property name of layer annotation
-	 */
-	String LAYER_PARENT_ANNOTATION_PROP_ID = "parentLayerId";
+	String SYSTEM_ANNOTATION_TYPE = ASystem.class.getName();
 }

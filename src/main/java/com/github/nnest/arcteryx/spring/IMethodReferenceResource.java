@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
  * @author brad.wu
  */
 public interface IMethodReferenceResource extends IClassReferenceResource {
+	char METHOD_BEAN_ID_SEPARATOR = '#';
 	/**
 	 * get reference method
 	 * 

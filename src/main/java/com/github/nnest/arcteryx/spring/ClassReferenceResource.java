@@ -16,7 +16,6 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 	private ApplicationContext applicationContext = null;
 	private String referenceBeanId = null;
 	private Class<?> referenceClass = null;
-	private String containerBeanId;
 
 	/**
 	 * do nothing, only for class extend
@@ -31,9 +30,6 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 		this.setApplicationContext(applicationContext);
 		this.setReferenceBeanId(referenceBeanId);
 		this.setReferenceClass(referenceClass);
-		this.setId(this.determineId());
-		this.setContainerBeanId(AnnotatedResourceUtils.determineContainerId(this.getReferenceClass()));
-		this.setLayer(AnnotatedResourceUtils.determineLayer(this.getReferenceClass()));
 	}
 
 	/**
@@ -44,32 +40,6 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 	@Override
 	protected void assertIdNotEmpty(String id) {
 		// overwrite super to accept empty string when constructing
-	}
-
-	/**
-	 * determine resource id from annotation
-	 * 
-	 * @return
-	 */
-	protected String determineId() {
-		return AnnotatedResourceUtils.determineResourceId(this.getReferenceClass());
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.nnest.arcteryx.spring.IAnnotatedResource#getContainerBeanId()
-	 */
-	public String getContainerBeanId() {
-		return this.containerBeanId;
-	}
-
-	
-	/**
-	 * @param containerBeanId the containerBeanId to set
-	 */
-	protected void setContainerBeanId(String containerBeanId) {
-		this.containerBeanId = containerBeanId;
 	}
 
 	/**
@@ -121,5 +91,15 @@ public class ClassReferenceResource extends AbstractResource implements IClassRe
 	 */
 	protected void setReferenceClass(Class<?> referenceClass) {
 		this.referenceClass = referenceClass;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * 
+	 * @see com.github.nnest.arcteryx.AbstractResource#setId(java.lang.String)
+	 */
+	@Override
+	public void setId(String id) {
+		super.setId(id);
 	}
 }

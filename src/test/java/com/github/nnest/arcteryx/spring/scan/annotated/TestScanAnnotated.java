@@ -45,11 +45,11 @@ public class TestScanAnnotated {
 		assertNotNull(app);
 		assertTrue(app instanceof Shop);
 		assertEquals(Shop.ID, app.getId());
-		assertEquals(ResourceUtils.getLayer("top", null), app.getLayer());
+		assertEquals(ResourceUtils.getLayer("top", null), app.getSystem());
 		Collection<IApplication> childApplications = app.getResources(IApplication.class);
 		assertEquals(1, childApplications.size());
 		IAnnotatedResource extendApp = (IAnnotatedResource) childApplications.iterator().next();
-		assertEquals(ResourceUtils.getLayer("extend", "top"), extendApp.getLayer());
+		assertEquals(ResourceUtils.getLayer("extend", "top"), extendApp.getSystem());
 		assertEquals("Shop", extendApp.getContainerBeanId());
 		Collection<IComponent> components = app.getResources(IComponent.class);
 		assertEquals(1, components.size());
@@ -60,7 +60,7 @@ public class TestScanAnnotated {
 		IComponent comp = enterprise.findResource("Shop/ToySaler");
 		assertNotNull(comp);
 		assertTrue(comp instanceof ToySalerExtend);
-		assertEquals(ResourceUtils.getLayer("extend", "top"), comp.getLayer());
+		assertEquals(ResourceUtils.getLayer("extend", "top"), comp.getSystem());
 
 		IResource res = enterprise.findResource("Shop/ToySaler/TedBear");
 		assertNotNull(res);
