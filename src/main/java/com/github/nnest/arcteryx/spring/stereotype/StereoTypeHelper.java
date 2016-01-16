@@ -5,6 +5,7 @@ package com.github.nnest.arcteryx.spring.stereotype;
 
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
@@ -15,6 +16,22 @@ import org.springframework.core.type.AnnotationMetadata;
  * @author brad.wu
  */
 public final class StereoTypeHelper {
+	/**
+	 * determine derivation path by given class
+	 * 
+	 * @param systemClass
+	 * @return
+	 */
+	public static String determineDerivation(Class<?> systemClass) {
+		ASystem annotation = systemClass.getAnnotation(ASystem.class);
+		if (annotation == null) {
+			return null;
+		} else {
+			String derivation = annotation.deriveFrom();
+			return StringUtils.isBlank(derivation) ? null : derivation;
+		}
+	}
+
 	/**
 	 * determine resource path by given class
 	 * 

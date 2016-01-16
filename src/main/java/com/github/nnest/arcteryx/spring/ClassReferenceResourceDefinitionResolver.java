@@ -3,6 +3,7 @@
  */
 package com.github.nnest.arcteryx.spring;
 
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import com.github.nnest.arcteryx.IResource;
+import com.github.nnest.arcteryx.spring.stereotype.AClassReferResource;
 import com.github.nnest.arcteryx.spring.stereotype.StereoTypeHelper;
 
 /**
@@ -21,6 +23,17 @@ import com.github.nnest.arcteryx.spring.stereotype.StereoTypeHelper;
  * @author brad.wu
  */
 public class ClassReferenceResourceDefinitionResolver extends AbstractAnnotatedResourceDefinitionResolver {
+	/**
+	 * (non-Javadoc)
+	 * 
+	 * @see com.github.nnest.arcteryx.spring.AbstractAnnotatedResourceDefinitionResolver#getAnnotationClass()
+	 */
+	@Override
+	public Class<? extends Annotation> getAnnotationClass() {
+		Class<? extends Annotation> annotationClass = super.getAnnotationClass();
+		return annotationClass == null ? AClassReferResource.class : annotationClass;
+	}
+
 	/**
 	 * (non-Javadoc)
 	 * 

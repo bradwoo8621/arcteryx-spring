@@ -3,7 +3,7 @@
  */
 package com.github.nnest.arcteryx.spring.stereotype;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
@@ -16,9 +16,15 @@ import java.lang.annotation.Target;
  * 
  * @author brad.wu
  */
-@Target(ANNOTATION_TYPE)
+@Target(TYPE)
 @Retention(RUNTIME)
 @Documented
 @AResource
 public @interface ASystem {
+	/**
+	 * system path which current system derives from
+	 * 
+	 * @return
+	 */
+	String deriveFrom() default "";
 }

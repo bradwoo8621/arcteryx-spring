@@ -42,7 +42,7 @@ public class ResourceInterfaceDefinitionScanner extends ClassPathBeanDefinitionS
 		@SuppressWarnings("unchecked")
 		public TypeFilter create(String annotationClassName) {
 			try {
-				return new AnnotationTypeFilter((Class<? extends Annotation>) Class.forName(annotationClassName), true);
+				return new AnnotationTypeFilter((Class<? extends Annotation>) Class.forName(annotationClassName.trim()), true);
 			} catch (ClassNotFoundException e) {
 				throw new IllegalResourceDefinitionException("Failed to create annotation filter", e);
 			}
@@ -55,9 +55,9 @@ public class ResourceInterfaceDefinitionScanner extends ClassPathBeanDefinitionS
 		 * 
 		 * @see com.github.nnest.arcteryx.spring.ResourceInterfaceDefinitionScanner.ITypeFilterCreator#create(java.lang.String)
 		 */
-		public TypeFilter create(String argument) {
+		public TypeFilter create(String assignableClassName) {
 			try {
-				return new AssignableTypeFilter(Class.forName(argument));
+				return new AssignableTypeFilter(Class.forName(assignableClassName.trim()));
 			} catch (ClassNotFoundException e) {
 				throw new IllegalResourceDefinitionException("Failed to create assignable filter", e);
 			}

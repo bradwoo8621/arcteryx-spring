@@ -3,6 +3,7 @@
  */
 package com.github.nnest.arcteryx.spring;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import com.github.nnest.arcteryx.IResource;
 import com.github.nnest.arcteryx.spring.stereotype.AResource;
+import com.github.nnest.arcteryx.spring.stereotype.AMethodReferResource;
 import com.github.nnest.arcteryx.spring.stereotype.StereoTypeHelper;
 
 /**
@@ -23,6 +25,17 @@ import com.github.nnest.arcteryx.spring.stereotype.StereoTypeHelper;
  * @author brad.wu
  */
 public class MethodReferenceResourceDefinitionResolver extends AbstractAnnotatedResourceDefinitionResolver {
+	/**
+	 * (non-Javadoc)
+	 * 
+	 * @see com.github.nnest.arcteryx.spring.AbstractAnnotatedResourceDefinitionResolver#getAnnotationClass()
+	 */
+	@Override
+	public Class<? extends Annotation> getAnnotationClass() {
+		Class<? extends Annotation> annotationClass = super.getAnnotationClass();
+		return annotationClass == null ? AMethodReferResource.class : annotationClass;
+	}
+
 	/**
 	 * (non-Javadoc)
 	 * 
@@ -62,7 +75,8 @@ public class MethodReferenceResourceDefinitionResolver extends AbstractAnnotated
 									method);
 							resource.setId(
 									idPrefix + IMethodReferenceResource.METHOD_BEAN_ID_SEPARATOR + method.getName());
-							resourceMap.put(path, resource);
+							resourceMap.put(path + IMethodReferenceResource.METHOD_BEAN_ID_SEPARATOR + method.getName(),
+									resource);
 						}
 					}
 				}

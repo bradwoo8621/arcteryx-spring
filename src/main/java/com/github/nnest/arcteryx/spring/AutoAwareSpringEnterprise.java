@@ -188,13 +188,6 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 		allContexts.add(applicationContext);
 		Map<String, IResource> resourceMap = new HashMap<String, IResource>();
 
-		// if a class implements IResource, must was defined as a singleton bean
-		Map<String, IResource> resources = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
-				IResource.class);
-		for (IResource resource : resources.values()) {
-			resourceMap.put(StereoTypeHelper.determineResourcePath(resource.getClass()), resource);
-		}
-
 		this.determineInterfaceScanner(applicationContext);
 		List<ResourceInterfaceDefinitionScanner> scanners = this.getInterfaceScanners();
 		if (scanners != null && scanners.size() != 0) {
@@ -225,7 +218,24 @@ public class AutoAwareSpringEnterprise extends ApplicationObjectSupport implemen
 		for (Map.Entry<String, IResource> entry : resourceMap.entrySet()) {
 			IResource resource = entry.getValue();
 			if (resource instanceof ISystem) {
-				enterprise.prepareSystem((ISystem) resource);
+				ISystem system = (ISystem) resource;
+				ISystem derivation = system.getDerivation();
+				if (derivation == null) {
+					String derivationPath = StereoTypeHelper.determineDerivation(system.getClass());
+					if (derivationPath != null) {
+						IResource derivationSystem = resourceMap.get(derivationPath);
+						if (derivationSystem == null) {
+							throw new IllegalResourceDefinitionException(
+									"Derivation [" + derivationPath + "] of system [" + entry.getKey() + "] not found");
+						} else if (!(derivationSystem instanceof ISystem)) {
+							throw new IllegalResourceDefinitionException(
+									"Resource [" + derivationPath + "] is not a system");
+						} else {
+							system.setDerivation((ISystem) derivationSystem);
+						}
+					}
+				}
+				enterprise.prepareSystem(system);
 			} else {
 				String path = entry.getKey();
 				String containerPath = StringUtils.substring(path, 0, path.lastIndexOf(IResource.SEPARATOR_CHAR));

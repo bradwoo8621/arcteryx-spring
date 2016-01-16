@@ -11,8 +11,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * An application.<br/>
- * Class which annotated by this should be treated as an application.
+ * class reference resource, which doesn't implement {@linkplain IResource}
  * 
  * @author brad.wu
  */
@@ -20,5 +19,5 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Documented
 @AResource
-public @interface AnApplication {
+public @interface AClassReferResource {
 }

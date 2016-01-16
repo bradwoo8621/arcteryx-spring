@@ -8,4 +8,7 @@
 	default-lazy-init="true">
 
 	<bean class="com.github.nnest.arcteryx.spring.AutoAwareSpringEnterprise" />
+	<bean
+		id="DEFAULT_IMPLEMENTATION_RESOLVER"
+		class="com.github.nnest.arcteryx.spring.DefaultResourceDefintionResolver" />
 </beans>
